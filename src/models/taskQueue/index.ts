@@ -1,10 +1,9 @@
 import {Client, ClientOptions, Connection, ConnectionOptions, DataConverter} from '@temporalio/client';
 import {NativeConnection, Worker, WorkerOptions} from '@temporalio/worker';
 import {Express} from 'express';
+import {Logger} from 'winston';
+import {camelize} from '../../utils/camelize';
 import {Task, TaskConfig} from '../task';
-import { camelize } from '../../utils/camelize';
-import { Jobar } from '../../jobar';
-import { Logger } from 'winston';
 
 export interface TaskQueueOptions {
 	getDataConverter?: () => Promise<DataConverter>;
@@ -18,14 +17,14 @@ interface TaskQueueConfig {
 	logger: Logger;
 	app: Express;
 	connection: NativeConnection;
-	workerOptions?: WorkerOptions
+	workerOptions?: WorkerOptions;
 }
 
 export class TaskQueue {
 	static readonly tasksQueues: Array<TaskQueue> = [];
 	private readonly tasks: Array<Task> = [];
-	private readonly options: TaskQueueOptions = {}
-	private readonly _name: string
+	private readonly options: TaskQueueOptions = {};
+	private readonly _name: string;
 
 	private constructor(_name: string, options: TaskQueueOptions = {}) {
 		this._name = _name;

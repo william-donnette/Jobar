@@ -1,9 +1,9 @@
 import {Workflow, WorkflowFailedError, WorkflowStartOptions} from '@temporalio/client';
-import {Express, NextFunction, Request, Response} from 'express';
+import {Express, Request, Response} from 'express';
+import {Logger} from 'winston';
+import {camelize} from '../../utils/camelize';
+import {formatId} from '../../utils/format-id';
 import {TaskQueue} from '../taskQueue';
-import { Logger } from 'winston';
-import { camelize } from '../../utils/camelize';
-import { formatId } from '../../utils/format-id';
 
 export interface TaskOptions {
 	workflowStartOptions?: WorkflowStartOptions;
@@ -15,9 +15,9 @@ export interface TaskOptions {
 }
 
 export interface TaskConfig {
-	app: Express
-	logger: Logger
-	namespace: string
+	app: Express;
+	logger: Logger;
+	namespace: string;
 	temporalAddress: string;
 }
 
@@ -105,6 +105,7 @@ export class Task {
 					error: error?.cause?.message ?? new Error('internal_server_error'),
 					error_description: error?.message ?? typedError.message,
 				});
-			}});
+			}
+		});
 	}
 }

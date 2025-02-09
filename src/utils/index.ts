@@ -1,2 +1,1 @@
-export * from './logger';
-export * from './try-without-error'
+export * from './try-without-error';

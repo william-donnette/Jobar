@@ -116,11 +116,14 @@ package:register:
     variables:
         ENVIRONMENT: 'production'
     script:
+        - rm -rf .npm
+        - npm logout
+        - npm cache clean --force
         - touch .npmrc
         - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
         - npm install
         - npm run build
-        - npm publish --access public
+        - npm publish
     only:
         - tags
         - /^v\d+\.\d+\.\d+(-alpha|-beta)?$/

@@ -1,6 +1,6 @@
 {
 	"name": "jobar",
-	"version": "1.0.8",
+	"version": "1.0.9",
 	"description": "",
 	"main": "./dist/index.js",
 	"module": "./dist/index.mjs",
@@ -16,7 +16,7 @@
 		"build": "tsup"
 	},
 	"author": "William Donnette",
-	"license": "ISC",
+	"license": "MIT",
 	"devDependencies": {
 		"@temporalio/testing": "^1.11.7",
 		"@types/express": "^5.0.0",

@@ -15,6 +15,26 @@
         fi
     }
 
+# Installe les dépendances Node.js
+# Mets en place les caches
+node:install:
+    image: node:20.15-alpine
+    stage: build
+    only:
+        - main
+    script:
+        - npm install
+
+# Construit le projet Node.js
+node:build:
+    image: node:20.15-alpine
+    stage: build
+    needs: ['node:install']
+    only:
+        - main
+    script:
+        - npm run build
+
 mocha:test:
     image: node:20-bullseye-slim
     needs: ['node:build']

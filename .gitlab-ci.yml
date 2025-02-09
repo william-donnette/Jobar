@@ -115,9 +115,10 @@ package:register:
     allow_failure: false
     variables:
         ENVIRONMENT: 'production'
+        NODE_ENV: 'production'
     script:
         - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
-        - npm install
+        - npm ci
         - npm run build
         - npm publish
     only:

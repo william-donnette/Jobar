@@ -2,16 +2,12 @@
     function getTag() {
         local FILE_VERSION_PATH=${1}
         local DEFAULT_TAG=${2}
-        if [ ! $DEFAULT_TAG ]; then 
-            export TAG = DEFAULT_TAG
-        else 
-            if [ ! -f $FILE_VERSION_PATH ]; then
-                echo "Le fichier de version n'existe pas dans ce répertoire."
-                exit 1
-            fi
-            VERSION=$(node -p -e "require('$FILE_VERSION_PATH').version")
-            export TAG="v$VERSION"
+        if [ ! -f $FILE_VERSION_PATH ]; then
+            echo "Le fichier de version n'existe pas dans ce répertoire."
+            exit 1
         fi
+        VERSION=$(node -p -e "require('$FILE_VERSION_PATH').version")
+        export TAG="v$VERSION"
         TAG_REGEX='^v\d+\.\d+\.\d+(-alpha|-beta)?$'
         if [[ ! $TAG =~ $TAG_REGEX ]]; then
             echo "Version : $version (format invalide)"
@@ -36,7 +32,6 @@ tag:release:register:
     variables:
         ENVIRONMENT: 'production'
         FILE_VERSION_PATH: './package.json'
-        TAG: ''
     only:
         - main
     allow_failure: true
@@ -50,9 +45,9 @@ tag:release:register:
         - git config --global user.name "William Donnette"
         - git remote remove origin
         - git remote add origin https://oauth2:$OAUTH_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_PATH.git
-        - getTag "$FILE_VERSION_PATH" "$TAG"
-        - git tag -a "$TAG_NAME" -m "Version $TAG_NAME"
-        - git push origin "$TAG_NAME"
+        - getTag "$FILE_VERSION_PATH"
+        - git tag -a "$TAG" -m "Version $TAG"
+        - git push origin "$TAG"
 
 # Crée la release sur GitLab, nouvelle version
 release:register:

@@ -117,7 +117,7 @@ package:register:
         ENVIRONMENT: 'production'
     script:
         - rm -rf .npm
-        - npm logout
+        - npm logout || true
         - npm cache clean --force
         - touch .npmrc
         - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc

@@ -115,12 +115,12 @@ package:register:
     allow_failure: false
     variables:
         ENVIRONMENT: 'production'
+    before_script:
+        - apk update
+        - apk upgrade
+        - apk add bash curl
+        - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
     script:
-        - rm -rf .npm
-        - npm logout || true
-        - npm cache clean --force
-        - touch .npmrc
-        - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
         - npm install
         - npm run build
         - npm publish

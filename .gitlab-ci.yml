@@ -120,6 +120,7 @@ package:register:
         - apk upgrade
         - apk add bash curl
         - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
+        - mv .secure_files/.npmrc .npmrc
     script:
         - ls -al
         - cat .npmrc

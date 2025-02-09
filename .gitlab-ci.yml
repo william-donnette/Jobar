@@ -119,7 +119,6 @@ package:register:
         - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
         - npm install
         - npm run build
-        - npm adduser
         - npm publish --access public
     only:
         - tags

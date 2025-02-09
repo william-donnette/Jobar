@@ -118,5 +118,6 @@ package:register:
         - /^v\d+\.\d+\.\d+(-alpha|-beta)?$/
 
 stages:
+    - build
     - test
     - register

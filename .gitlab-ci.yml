@@ -35,6 +35,8 @@ tag:release:register:
     stage: register
     variables:
         ENVIRONMENT: 'production'
+        FILE_VERSION_PATH: './package.json'
+
     only:
         - main
     allow_failure: true

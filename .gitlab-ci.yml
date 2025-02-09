@@ -122,8 +122,6 @@ package:register:
         - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
         - mv .secure_files/.npmrc .npmrc
     script:
-        - ls -al
-        - cat .npmrc
         - npm install
         - npm run build
         - npm publish

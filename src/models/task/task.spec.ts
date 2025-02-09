@@ -60,7 +60,7 @@ describe('Task', () => {
 					task.setTaskQueue(taskQueue2);
 				},
 				{
-					message: "The taskQueue testQueue2 don't have the task mockWorkflow",
+					message: "❌ The taskQueue testQueue2 don't have the task mockWorkflow",
 				}
 			);
 		});

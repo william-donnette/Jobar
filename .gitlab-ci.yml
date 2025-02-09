@@ -15,6 +15,15 @@
         fi
     }
 
+mocha:test:
+    image: node:20-bullseye-slim
+    needs: ['node:build']
+    stage: test
+    only:
+        - main
+    script:
+        - npm run test
+
 # Assure qu'un seul job register est exécuté à la fois
 # Applique la protection de l'environnement
 .register:
@@ -89,4 +98,5 @@ package:register:
         - /^v\d+\.\d+\.\d+(-alpha|-beta)?$/
 
 stages:
+    - test
     - register

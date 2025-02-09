@@ -24,7 +24,7 @@ describe('TaskQueue', () => {
 					TaskQueue.create('testQueue'); // Réessaye de créer une TaskQueue avec le même nom
 				},
 				{
-					message: 'A TaskQueue with same name already exist.',
+					message: '❌ A TaskQueue with same name already exist.',
 				}
 			);
 		});
@@ -57,7 +57,7 @@ describe('TaskQueue', () => {
 					taskQueue.addTask(task);
 				},
 				{
-					message: 'This task is already in this taskQueue.',
+					message: '❌ This task is already in this taskQueue.',
 				}
 			);
 		});

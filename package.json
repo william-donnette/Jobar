@@ -1,6 +1,6 @@
 {
 	"name": "jobar",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "",
 	"main": "./dist/index.js",
 	"module": "./dist/index.mjs",
@@ -8,11 +8,8 @@
 	"files": [
 		"dist"
 	],
-	"publishConfig": {
-		"@william-donnette:registry": "https://gitlab.com/api/v4/projects/66944837/packages/npm/"
-	},
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1",
+		"test": "nyc mocha --exit --require ts-node/register --require source-map-support/register src/**/*.spec.ts",
 		"build": "tsup"
 	},
 	"author": "William Donnette",
@@ -23,7 +20,7 @@
 		"@types/mocha": "^10.0.10",
 		"eslint": "^9.12.0",
 		"mocha": "^11.1.0",
-		"ts-loader": "^9.5.1",
+		"nyc": "^17.1.0",
 		"tsup": "^8.1.0",
 		"typescript": "^5.4.5"
 	},

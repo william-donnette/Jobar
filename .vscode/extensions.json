@@ -1,0 +1,11 @@
+{
+	"recommendations": [
+		"dbaeumer.vscode-eslint",
+		"esbenp.prettier-vscode",
+		"vivaxy.vscode-conventional-commits",
+		"usernamehw.errorlens",
+		"mhutchie.git-graph",
+		"wix.vscode-import-cost",
+		"pkief.material-icon-theme"
+	]
+}

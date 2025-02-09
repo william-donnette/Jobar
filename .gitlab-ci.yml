@@ -1,0 +1,95 @@
+.declare-get-tag: &declare-get-tag |
+    function get-tag() {
+        local FILE_VERSION_PATH=${1}
+        local DEFAULT_TAG=${2}
+        if [ ! $DEFAULT_TAG ]; then 
+            export TAG = DEFAULT_TAG
+        else 
+            if [ ! -f $FILE_VERSION_PATH ]; then
+                echo "Le fichier de version n'existe pas dans ce répertoire."
+                exit 1
+            fi
+            VERSION=$(node -p -e "require('$FILE_VERSION_PATH').version")
+            export TAG="v$VERSION"
+        fi
+        TAG_REGEX='^v\d+\.\d+\.\d+(-alpha|-beta)?$'
+        if [[ ! $TAG =~ $TAG_REGEX ]]; then
+            echo "Version : $version (format invalide)"
+            exit 1
+        fi
+    }
+
+# Assure qu'un seul job register est exécuté à la fois
+# Applique la protection de l'environnement
+.register:
+    image: node:20.15-alpine
+    variables:
+        ENVIRONMENT: ''
+    environment:
+        name: $ENVIRONMENT
+    resource_group: $ENVIRONMENT
+
+# Tag la release, nouvelle version
+tag:release:register:
+    extends: .register
+    stage: register
+    variables:
+        ENVIRONMENT: 'production'
+    only:
+        - main
+    allow_failure: true
+    before_script:
+        - apk update
+        - apk upgrade
+        - apk add git bash
+    script:
+        - *declare-get-tag
+        - git config --global user.email "willdonn17@gmail.com"
+        - git config --global user.name "William Donnette"
+        - git remote remove origin
+        - git remote add origin https://oauth2:$OAUTH_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_PATH.git
+        - get-tag "$FILE_VERSION_PATH" "$TAG"
+        - git tag -a "$TAG_NAME" -m "Version $TAG_NAME"
+        - git push origin "$TAG_NAME"
+
+# Crée la release sur GitLab, nouvelle version
+release:register:
+    extends: .register
+    stage: register
+    variables:
+        ENVIRONMENT: 'production'
+    only:
+        - tags
+        - /^v\d+\.\d+\.\d+(-alpha|-beta)?$/
+    release:
+        tag_name: $CI_COMMIT_TAG
+        name: 'Version $CI_COMMIT_TAG'
+        description: 'Realease created by William Donnette'
+    before_script:
+        - apk update
+        - apk upgrade
+        - apk add bash curl
+        - curl --location --output /usr/local/bin/release-cli "https://gitlab.com/api/v4/projects/gitlab-org%2Frelease-cli/packages/generic/release-cli/latest/release-cli-linux-amd64"
+        - chmod +x /usr/local/bin/release-cli
+    script:
+        - release-cli -v
+        - echo "Creating release $CI_COMMIT_TAG"
+
+# Crée le package sur Gitlab, nouvelle version
+package:register:
+    extends: .register
+    stage: register
+    allow_failure: false
+    variables:
+        ENVIRONMENT: 'production'
+    script:
+        - echo "//${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" > .npmrc
+        - npm install
+        - npm run build
+        - npm publish
+    only:
+        - tags
+        - /^v\d+\.\d+\.\d+(-alpha|-beta)?$/
+
+stages:
+    - register

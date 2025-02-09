@@ -1,0 +1,40 @@
+{
+	"name": "jobar",
+	"version": "1.0.0",
+	"description": "",
+	"main": "./dist/index.js",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"publishConfig": {
+		"@william-donnette:registry": "https://gitlab.com/api/v4/projects/66944837/packages/npm/"
+	},
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"build": "tsup"
+	},
+	"author": "William Donnette",
+	"license": "ISC",
+	"devDependencies": {
+		"@temporalio/testing": "^1.11.7",
+		"@types/express": "^5.0.0",
+		"@types/mocha": "^10.0.10",
+		"eslint": "^9.12.0",
+		"mocha": "^11.1.0",
+		"ts-loader": "^9.5.1",
+		"tsup": "^8.1.0",
+		"typescript": "^5.4.5"
+	},
+	"dependencies": {
+		"@temporalio/activity": "^1.11.7",
+		"@temporalio/client": "^1.11.7",
+		"@temporalio/worker": "^1.11.7",
+		"@temporalio/workflow": "^1.11.7",
+		"dotenv": "^16.4.5",
+		"express": "^4.21.2",
+		"ts-node": "^10.9.2",
+		"winston": "^3.17.0"
+	}
+}

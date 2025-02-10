@@ -13,10 +13,16 @@
 	"author": "William Donnette",
 	"license": "MIT",
 	"devDependencies": {
+		"@temporalio/testing": "^1.11.7",
+		"@types/express": "^5.0.0",
+		"@types/mocha": "^10.0.10",
 		"mocha": "^11.1.0",
-		"nyc": "^17.1.0"
+		"nyc": "^17.1.0",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.7.3"
 	},
 	"dependencies": {
-		"jobar": "^1.0.15"
+		"express": "^4.21.2",
+		"jobar": "^1.1.1"
 	}
 }

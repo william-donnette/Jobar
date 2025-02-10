@@ -1,6 +1,6 @@
 {
 	"name": "jobar",
-	"version": "1.1.1",
+	"version": "1.1.2",
 	"description": "",
 	"main": "./dist/index.js",
 	"module": "./dist/index.mjs",
@@ -25,6 +25,7 @@
 		"eslint": "^9.12.0",
 		"mocha": "^11.1.0",
 		"nyc": "^17.1.0",
+		"ts-node": "^10.9.2",
 		"tsup": "^8.1.0",
 		"typescript": "^5.4.5"
 	},
@@ -36,7 +37,6 @@
 		"cors": "^2.8.5",
 		"dotenv": "^16.4.5",
 		"express": "^4.21.2",
-		"ts-node": "^10.9.2",
 		"winston": "^3.17.0"
 	}
 }

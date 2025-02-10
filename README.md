@@ -33,7 +33,7 @@ yarn add jobar
 
 ## 💻 Exemple d'utilisation
 
-Retrouvez des exemples sur le repo officiel [Gitlab Examples](https://gitlab.com/william-donnette/jobar/-/tree/main/examples/hello-world?ref_type=heads)
+Retrouvez des exemples sur le repo officiel [Gitlab Examples](https://gitlab.com/william-donnette/jobar/-/tree/main/examples?ref_type=heads)
 
 ## 🔗 Liens
 

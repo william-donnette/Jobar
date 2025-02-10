@@ -33,6 +33,50 @@ yarn add jobar
 
 ## 📌 Concepts Clés
 
+### Workflow
+
+Un **Workflow** est une fonction durable exécutée par Temporal. Il est responsable de l'orchestration des tâches et de la gestion des états.
+
+#### Exemple d'un Workflow :
+
+```typescript
+import {Request} from 'express';
+import {proxyActivities} from '@temporalio/workflow';
+import activities from '../activities';
+
+const {hardcodedPasswordLogin} = proxyActivities<typeof activities>({
+	startToCloseTimeout: '1 minute',
+	retry: {maximumAttempts: 3},
+});
+
+type LoginInput = {username: string; password: string};
+
+export async function login(requestBody: LoginInput, requestHeaders: Request['headers']): Promise<string> {
+	return await hardcodedPasswordLogin(requestBody.username, requestBody.password);
+}
+```
+
+### Activity
+
+Une **Activity** est une fonction qui effectue une opération spécifique au sein d'un Workflow. Les Activities peuvent interagir avec des bases de données, des services externes, ou effectuer des calculs complexes.
+
+#### Exemple d'une Activity :
+
+```typescript
+import {JobarError} from 'jobar';
+
+export async function hardcodedPasswordLogin(username: string, password: string): Promise<string> {
+	if (password !== 'temporal') {
+		throw new JobarError('Unauthorized', {
+			statusCode: 401,
+			errorCode: 'unauthorized',
+			description: 'Bad Credentials',
+		});
+	}
+	return `Hello, ${username} !`;
+}
+```
+
 ### Task
 
 Une **Task** représente une unité de travail associée à un workflow Temporal. Elle peut être configurée avec diverses options et exposée via une API Express.
@@ -108,6 +152,8 @@ const exampleTaskQueue = new TaskQueue('example', {
 #### Exemple d'utilisation :
 
 ```typescript
+# src/index.ts
+
 import express from 'express';
 import Jobar from 'jobar';
 import exampleTaskQueue from './tasks/example';
@@ -135,6 +181,7 @@ Vous pouvez utiliser ce modèle tel un framework
 your-project/
 ├── src/
 │   ├── activities/     # Gestion des activités
+│   |   └── index.ts    # Exportez toutes vos activités dans une variable par défaut nommée `activities`
 │   ├── tasks/          # Gestion des tâches et files d'attente
 │   ├── workflows/      # Gestion des workflows
 │   |   └── index.ts    # Exportez tous vos workflows visibles par l'option `workflowsPath`

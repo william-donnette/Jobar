@@ -1,7 +1,7 @@
 import express from 'express';
 import Jobar from 'jobar';
-import activities from './src/activities';
-import exampleTaskQueue from './src/tasks/hello-world';
+import activities from './activities';
+import exampleTaskQueue from './tasks/example';
 
 const app = express();
 app.use(express.json());

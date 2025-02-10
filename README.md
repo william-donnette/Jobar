@@ -1,6 +1,6 @@
 # Jobar 🏗️
 
-![Temporal](https://temporal.io/images/open-graph/shiny.png)
+![Temporal](https://platformatory.io/blog/assets/blog-images/Introduction-to-temporal/temporal_logo.png)
 
 **Jobar** est une bibliothèque TypeScript permettant d'orchestrer des workflows avec [Temporal](https://temporal.io/) et de les exposer facilement via une API Express.
 

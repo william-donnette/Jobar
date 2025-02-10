@@ -1,7 +1,5 @@
-export const tryWithoutError: (callback: Function) => Promise<void> = async (callback) => {
+export const tryWithoutError: <T>(callback: () => Promise<T>) => Promise<void | T> = async (callback) => {
 	try {
-		await callback();
-	} catch (err) {
-		console.error(err);
-	}
+		return await callback();
+	} catch (err) {}
 };

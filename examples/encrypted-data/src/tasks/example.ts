@@ -1,15 +1,15 @@
 import {Request} from 'express';
 import {Task, TaskQueue, getDataConverter} from 'jobar';
-import {HelloWorld} from '../workflows';
+import {login} from '../workflows';
 
 // Create your task from your workflow
-const exampleTask = new Task(HelloWorld, {
+const exampleTask = new Task(login, {
 	setWorkflowId: (req: Request) => {
-		return 'workflow-hello-world-' + req.body.name;
+		return 'workflow-login-' + req.body.username;
 	},
 	isExposed: true,
 	method: 'post',
-	endpoint: 'helloWorld',
+	endpoint: 'login',
 });
 
 // Add the task in a queue, add all the task you want on the queue

@@ -3,6 +3,7 @@ import {Express, Request, Response} from 'express';
 import {Logger} from 'winston';
 import {camelize} from '../../utils/camelize';
 import {formatId} from '../../utils/format-id';
+import {JobarError} from '../error';
 import {TaskQueue} from '../taskQueue';
 
 export interface TaskOptions {
@@ -19,6 +20,7 @@ export interface TaskConfig {
 	logger: Logger;
 	namespace: string;
 	temporalAddress: string;
+	defaultStatusCodeError: number;
 }
 
 export class Task {
@@ -73,7 +75,7 @@ export class Task {
 
 	/* istanbul ignore next */
 	async run(config: TaskConfig) {
-		const {app, logger} = config;
+		const {app, logger, defaultStatusCodeError} = config;
 		if (!this.isExposed) {
 			throw new Error('❌ Set isExposed to true in the options of this task to enable route creation');
 		}
@@ -100,10 +102,18 @@ export class Task {
 			} catch (workflowError: unknown) {
 				const typedError = workflowError as WorkflowFailedError;
 				const error = typedError.cause;
-				logger.error(`❌ WORKFLOW ${workflowId} failed : ${error?.message ?? typedError?.message}`);
-				res.status(200).json({
-					error: error?.cause?.message ?? new Error('internal_server_error'),
-					error_description: error?.message ?? typedError.message,
+				const defaultCause = new JobarError('Internal Server Error');
+				const cause = (error?.cause ?? defaultCause) as JobarError;
+				const message = JSON.parse(cause.message);
+				const defaultMessage = JSON.parse(defaultCause.message);
+				if (!message.isJobarError) {
+					logger.warn('⚠️ Prefer to use JobarError in your activities');
+				}
+				logger.error(`❌ WORKFLOW ${workflowId} failed : ${message?.message ?? defaultMessage.message}`);
+				res.status(message.statusCode ?? defaultStatusCodeError).json({
+					error: message?.message ?? defaultMessage.message,
+					error_description: message?.description ?? defaultMessage.description,
+					error_code: message?.errorCode ?? defaultMessage.errorCode,
 				});
 			}
 		});

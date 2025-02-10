@@ -1,8 +1,9 @@
 **/node_modules
 **/.npmrc
 **/dist
-**/.env
+.env
 **/.nyc_output
 **/coverage
 **/logs
 **/lib
+examples/**/package-lock.json

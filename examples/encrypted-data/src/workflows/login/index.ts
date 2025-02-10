@@ -1,19 +1,20 @@
 import {proxyActivities} from '@temporalio/workflow';
 import activities from '../../activities';
 
-const {sayHello} = proxyActivities<typeof activities>({
+const {hardcodedPasswordLogin} = proxyActivities<typeof activities>({
 	startToCloseTimeout: '1 minute',
 	retry: {
 		maximumAttempts: 3,
 	},
 });
 
-type HelloWorldInput = {
-	name: string;
+type LoginInput = {
+	username: string;
+	password: string;
 };
 
 /* istanbul ignore next */
-export async function HelloWorld(body: HelloWorldInput, headers?: Request['headers']): Promise<string> {
+export async function login(body: LoginInput, headers?: Request['headers']): Promise<string> {
 	/**
 	 *
 	 * WARNING !!!
@@ -21,9 +22,12 @@ export async function HelloWorld(body: HelloWorldInput, headers?: Request['heade
 	 * Prefer use only buisness activities and track all the workflow on temporal dashboard
 	 *
 	 */
-
-	const treatmentResponse = await sayHello(body.name);
+	try {
+		const treatmentResponse = await hardcodedPasswordLogin(body.username, body.password);
+		return treatmentResponse;
+	} catch (e) {
+		console.error(e);
+		throw e;
+	}
 	// Add other activities
-
-	return treatmentResponse;
 }

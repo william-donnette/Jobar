@@ -11,6 +11,7 @@ interface JobarOptions {
 	logger?: Logger;
 	logLevel?: string;
 	namespace?: string;
+	defaultStatusCodeError?: number;
 }
 
 interface JobarConfig {
@@ -26,14 +27,24 @@ export class Jobar {
 	logger: Logger;
 	logLevel: string;
 	namespace: string;
+	defaultStatusCodeError: number;
 
-	constructor({app, workflowsPath, temporalAddress, logger, logLevel = 'debug', namespace = 'default'}: JobarOptions) {
+	constructor({
+		app,
+		workflowsPath,
+		temporalAddress,
+		logger,
+		logLevel = 'debug',
+		namespace = 'default',
+		defaultStatusCodeError = 500,
+	}: JobarOptions) {
 		this.app = app;
 		this.temporalAddress = temporalAddress;
 		this.workflowsPath = workflowsPath;
 		this.logLevel = logLevel;
 		this.namespace = namespace;
 		this.logger = logger ?? getDefaultLogger(this.logLevel);
+		this.defaultStatusCodeError = defaultStatusCodeError;
 	}
 
 	addTaskQueue(taskQueue: TaskQueue) {
@@ -57,6 +68,7 @@ export class Jobar {
 				logger: this.logger,
 				namespace: this.namespace,
 				temporalAddress: this.temporalAddress,
+				defaultStatusCodeError: this.defaultStatusCodeError,
 				workerOptions: {
 					taskQueue: taskQueue.name,
 					workflowsPath: this.workflowsPath,

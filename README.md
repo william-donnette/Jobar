@@ -1,4 +1,4 @@
-# Jobar 🏗️
+# Jobar
 
 ![Temporal](https://platformatory.io/blog/assets/blog-images/Introduction-to-temporal/temporal_logo.png)
 
@@ -22,12 +22,6 @@ yarn add jobar
 -   🔄 Gestion des workflows et des activités
 -   📡 Exposition des tâches en API REST avec Express
 -   📝 Journalisation intégrée avec Winston
-
----
-
-## 📷 Aperçu du Dashboard Temporal
-
-![Temporal Dashboard](https://miro.medium.com/v2/resize:fit:2000/1*piyH9uLZ6ooYCkv6XqBTQA.png)
 
 ---
 
@@ -173,6 +167,8 @@ jobar.addTaskQueue(exampleTaskQueue).run({activities});
 app.listen(3000, () => console.log('Server running on port 3000'));
 ```
 
+---
+
 ## 📂 Structure de projet conseillé
 
 Vous pouvez utiliser ce modèle tel un framework
@@ -188,9 +184,16 @@ your-project/
 │   └── index.ts        # Point d'entrée
 ```
 
+---
+
 ## 💻 Exemple d'utilisation
 
 Retrouvez des exemples sur le repo officiel [🔗 Github Examples](https://github.com/william-donnette/jobar/tree/main/examples)
+
+-   [Hello World](https://github.com/william-donnette/jobar/tree/main/examples/hello-world)
+-   [Encrypted Data](https://github.com/william-donnette/jobar/tree/main/examples/encrypted-data)
+
+---
 
 ## 🔗 Liens
 
@@ -198,7 +201,17 @@ Retrouvez des exemples sur le repo officiel [🔗 Github Examples](https://githu
 -   🐙 [GitHub](https://github.com/william-donnette/jobar)
 -   🐙 [GitHub Examples](https://github.com/william-donnette/jobar/tree/main/examples)
 -   🦊 [GitLab](https://gitlab.com/william-donnette/jobar)
+-   🦊 [GitLab Examples](https://gitlab.com/william-donnette/jobar/-/tree/main/examples?ref_type=heads)
+-   📚 [Temporal TypeScript SDK Documentation](https://docs.temporal.io/develop/typescript/)
+
+---
 
 ## 📞 Contact
 
 -   👨🏻‍💻 [William Donnette](https://william-donnette.dev/#contact)
+
+---
+
+## 📷 Aperçu du Dashboard Temporal
+
+![Temporal Dashboard](https://miro.medium.com/v2/resize:fit:2000/1*piyH9uLZ6ooYCkv6XqBTQA.png)

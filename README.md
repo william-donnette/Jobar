@@ -33,27 +33,7 @@ yarn add jobar
 
 ## 💻 Exemple d'utilisation
 
-```typescript
-import express from 'express';
-import {Jobar} from 'jobar';
-
-const app = express();
-const jobar = new Jobar({
-	app,
-	workflowsPath: './workflows',
-	temporalAddress: 'localhost:7233',
-});
-
-jobar.run({
-	activities: {
-		sayHello: async (name: string) => `Hello, ${name}!`,
-	},
-});
-
-app.listen(3000, () => console.log('Server is running on port 3000'));
-```
-
----
+Retrouvez des exemples sur le repo officiel [Gitlab Examples](https://gitlab.com/william-donnette/jobar/-/tree/main/examples/hello-world?ref_type=heads)
 
 ## 🔗 Liens
 

@@ -77,9 +77,9 @@ export class Task {
 		if (!this.isExposed) {
 			throw new Error('❌ Set isExposed to true in the options of this task to enable route creation');
 		}
-		logger.debug(`🚀 ${this.info} listening`);
+		logger.info(`${this.info} listening`);
 		app[this.method](this.url, async (req: Request, res: Response) => {
-			logger.debug(`${this.info} requested`);
+			logger.debug(`⌛ ${this.info} requested`);
 			if (!this.taskQueue) {
 				throw new Error('❌ This task is not assigned in a taskQueue.');
 			}
@@ -93,9 +93,9 @@ export class Task {
 					taskQueue: this.taskQueue.name,
 					workflowId,
 				});
-				logger.info(`⌛ WORKFLOW ${workflowId} running`);
+				logger.debug(`⌛ WORKFLOW ${workflowId} requested`);
 				const response = await handle.result();
-				logger.info(`✅ WORKFLOW ${workflowId} ended`);
+				logger.debug(`✅ WORKFLOW ${workflowId} ended`);
 				res.json(response);
 			} catch (workflowError: unknown) {
 				const typedError = workflowError as WorkflowFailedError;

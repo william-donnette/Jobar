@@ -65,7 +65,7 @@ export class TaskQueue {
 	async createNewConnection(config: TaskConfig) {
 		const {temporalAddress, logger} = config;
 		const {connectionOptions} = this.options;
-		logger.info(`New connection on ${connectionOptions?.address ?? temporalAddress}`);
+		logger.debug(`New connection on ${connectionOptions?.address ?? temporalAddress}`);
 		return await Connection.connect({
 			address: temporalAddress,
 			...connectionOptions,
@@ -79,7 +79,7 @@ export class TaskQueue {
 		const connection = await this.createNewConnection(config);
 		const dataConverter = await this.getDataConverter();
 		const isCrypted = !!dataConverter;
-		logger.info(`${isCrypted ? '🔐 New crypted' : 'New'} client on ${clientOptions?.namespace ?? namespace}`);
+		logger.debug(`${isCrypted ? '🔐 New crypted' : 'New'} client on ${clientOptions?.namespace ?? namespace}`);
 		return new Client({
 			connection,
 			namespace: namespace,
@@ -104,10 +104,10 @@ export class TaskQueue {
 	async run(config: TaskQueueConfig) {
 		const {app, logger, namespace, temporalAddress} = config;
 		const worker = await this.createWorker(config);
-		logger.debug(`🚩🚩🚩 ${this._name.toUpperCase()} 🚩🚩🚩`);
+		logger.info(`🚩 ${this._name.toUpperCase()} installation`);
 		worker.run();
 		for (const task of this.tasks) {
-			logger.debug(`${task.name}`);
+			logger.info(`🚀 ${task.name} is running`);
 			if (task.isExposed) {
 				task.run({app, logger, namespace, temporalAddress});
 			}

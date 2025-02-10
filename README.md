@@ -18,10 +18,13 @@ yarn add jobar
 
 ## 📌 Features
 
--   🌐 Simplified connection to Temporal
--   🔄 Workflow and activity management
--   📡 Task exposure via a REST API with Express
--   📝 Integrated logging with Winston
+-   🚀 Simplified workflow management with Temporal.io
+-   📌 Creation and execution of tasks in dedicated queues
+-   🔒 Secure data encoding and decoding via an encryption codec
+-   📜 Built-in logger with Winston for detailed event tracking
+-   🌐 Task exposure on HTTP routes using Express
+-   🧪 Comprehensive unit testing with Mocha
+-   🛠️ Modular and extensible architecture
 
 ---
 
@@ -99,6 +102,70 @@ const exampleTask = new Task(login, {
 	method: 'post',
 	endpoint: 'login',
 });
+```
+
+## TaskQueue
+
+A **TaskQueue** is a queue grouping multiple `Task` instances. Each queue is associated with a `Worker` that executes the workflows.
+
+### Available Options:
+
+| Option              | Type                           | Description                                                                                                                                                |
+| ------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getDataConverter`  | `() => Promise<DataConverter>` | Allows using a custom data converter (e.g., encryption) [See related documentation](https://docs.temporal.io/develop/typescript/converters-and-encryption) |
+| `connectionOptions` | `ConnectionOptions`            | Temporal connection options [See related documentation](https://docs.temporal.io/develop/typescript/core-application#connect-to-temporal-cloud)            |
+| `clientOptions`     | `ClientOptions`                | Temporal client options [See related documentation](https://docs.temporal.io/develop/typescript/core-application#connect-to-a-dev-cluster)                 |
+
+### Usage Example:
+
+```typescript
+import {TaskQueue, getDataConverter} from 'jobar';
+
+const exampleTaskQueue = new TaskQueue('example', {
+	getDataConverter, // Default data encryption for Temporal Codec
+}).addTask(exampleTask);
+```
+
+---
+
+## Jobar
+
+**Jobar** is the central engine that orchestrates workflows, connects workers to Temporal, and exposes tasks via an Express API.
+
+### Available Options:
+
+| Option                   | Type      | Description                                                     |
+| ------------------------ | --------- | --------------------------------------------------------------- |
+| `app`                    | `Express` | Express application instance                                    |
+| `workflowsPath`          | `string`  | Path to workflows                                               |
+| `temporalAddress`        | `string`  | Temporal server address                                         |
+| `logger`                 | `Logger`  | Winston logger instance `Default: Logger Winston default`       |
+| `logLevel`               | `string`  | Logging level (`debug`, `info`, `error`, etc.) `Default: debug` |
+| `namespace`              | `string`  | Namespace used in Temporal `Default: default`                   |
+| `defaultStatusCodeError` | `number`  | Default HTTP error code `Default: 500`                          |
+
+### Usage Example:
+
+```typescript
+# src/index.ts
+
+import express from 'express';
+import Jobar from 'jobar';
+import exampleTaskQueue from './tasks/example';
+import activities from './activities';
+
+const app = express();
+app.use(express.json());
+
+const jobar = new Jobar({
+    app,
+    workflowsPath: require.resolve('./workflows'),
+    temporalAddress: 'localhost:7233',
+});
+
+jobar.addTaskQueue(exampleTaskQueue).run({activities});
+
+app.listen(3000, () => console.log('Server running on port 3000'));
 ```
 
 ---

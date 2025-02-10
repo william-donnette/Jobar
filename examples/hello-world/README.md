@@ -1,36 +1,40 @@
-## 🚀 Installation
+# Examples
 
-:warning: Nécessite Docker d'installer pour la conteneurisation de temporal
+## Hello World
+
+### 🚀 Installation
+
+:warning: Requires Docker for Temporal containerization
 
 ```sh
 docker compose up -d
 
 npm install
-# ou
+# or
 yarn install
 
 npm run dev
-# ou
+# or
 npm run build
 npm run start
 ```
 
-Cela devrait vous ouvrir plusieurs ports:
+This should open several ports:
 
--   Le Dashboard Temporal UI [http://localhost:8082](http://localhost:8082/namespaces/default/workflows)
--   Une API Express [localhost:3000](localhost:3000)
-    -   Cette API contient un endpoint [localhost:3000/tasks/helloWorld](localhost:3000/tasks/helloWorld) sur lequel vous pouvez tester des requêtes POST.
+-   Temporal Dashboard UI [http://localhost:8082](http://localhost:8082/namespaces/default/workflows)
+-   An Express API [localhost:3000](localhost:3000)
+    -   This API has an endpoint [localhost:3000/tasks/helloWorld](localhost:3000/tasks/helloWorld) where you can test POST requests.
 
-Vous pouvez tester cet endpoint avec la commande suivante:
+You can test this endpoint using the following command:
 
 ```sh
 curl --location 'localhost:3000/tasks/helloWorld' --header 'Content-Type: application/json' --data '{"name": "Temporal"}'
 ```
 
-Vous pouvez ensuite vous rendre sur le Dashboard Temporal UI pour voir votre activité
+You can then visit the Temporal Dashboard UI to view your activity.
 
 ---
 
-## 📷 Aperçu du Workflow HelloWorld sur le Dashboard Temporal
+## 📷 Hello World Workflow on Temporal Dashboard
 
 ![Temporal Dashboard](./img/dashboard-workflow-hello-world.png)

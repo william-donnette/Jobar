@@ -2,7 +2,7 @@
 
 ![Temporal](https://platformatory.io/blog/assets/blog-images/Introduction-to-temporal/temporal_logo.png)
 
-**Jobar** est une bibliothèque TypeScript permettant d'orchestrer des workflows avec [Temporal](https://temporal.io/) et de les exposer facilement via une API Express.
+**Jobar** is a TypeScript library that allows orchestrating workflows with [Temporal](https://temporal.io/) and exposing them easily via an Express API.
 
 ---
 
@@ -10,28 +10,28 @@
 
 ```sh
 npm install jobar
-# ou
+# or
 yarn add jobar
 ```
 
 ---
 
-## 📌 Fonctionnalités
+## 📌 Features
 
--   🌐 Connexion simplifiée à Temporal
--   🔄 Gestion des workflows et des activités
--   📡 Exposition des tâches en API REST avec Express
--   📝 Journalisation intégrée avec Winston
+-   🌐 Simplified connection to Temporal
+-   🔄 Workflow and activity management
+-   📡 Task exposure via a REST API with Express
+-   📝 Integrated logging with Winston
 
 ---
 
-## 📌 Concepts Clés
+## 📌 Key Concepts
 
 ### Workflow
 
-Un **Workflow** est une fonction durable exécutée par Temporal. Il est responsable de l'orchestration des tâches et de la gestion des états.
+A **Workflow** is a durable function executed by Temporal. It is responsible for orchestrating tasks and managing states.
 
-#### Exemple d'un Workflow :
+#### Example of a Workflow:
 
 ```typescript
 import {Request} from 'express';
@@ -52,9 +52,9 @@ export async function login(requestBody: LoginInput, requestHeaders: Request['he
 
 ### Activity
 
-Une **Activity** est une fonction qui effectue une opération spécifique au sein d'un Workflow. Les Activities peuvent interagir avec des bases de données, des services externes, ou effectuer des calculs complexes.
+An **Activity** is a function that performs a specific operation within a Workflow. Activities can interact with databases, external services, or perform complex computations.
 
-#### Exemple d'une Activity :
+#### Example of an Activity:
 
 ```typescript
 import {JobarError} from 'jobar';
@@ -73,20 +73,20 @@ export async function hardcodedPasswordLogin(username: string, password: string)
 
 ### Task
 
-Une **Task** représente une unité de travail associée à un workflow Temporal. Elle peut être configurée avec diverses options et exposée via une API Express.
+A **Task** represents a unit of work associated with a Temporal workflow. It can be configured with various options and exposed via an Express API.
 
-#### Options disponibles :
+#### Available Options:
 
-| Option                 | Type                                      | Description                                                                                                                               |
-| ---------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `workflowStartOptions` | `WorkflowStartOptions`                    | Options de démarrage du workflow [Voir la doc associée](https://docs.temporal.io/develop/typescript/core-application#workflow-parameters) |
-| `setWorkflowId`        | `(req: Request) => string`                | Fonction pour définir un identifiant unique de workflow basé sur la requête                                                               |
-| `isExposed`            | `boolean`                                 | Indique si la tâche doit être exposée via une API Express                                                                                 |
-| `method`               | `'get', 'post', 'put', 'patch', 'delete'` | Méthode HTTP de l'endpoint `Obligatoire si isExposed est à true`                                                                          |
-| `endpoint`             | `string`                                  | URL de l'endpoint `Obligatoire si isExposed est à true`                                                                                   |
-| `prefixUrl`            | `string`                                  | Préfixe de l'URL de l'endpoint `Default: /tasks`                                                                                          |
+| Option                 | Type                                      | Description                                                                                                                  |
+| ---------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `workflowStartOptions` | `WorkflowStartOptions`                    | Workflow startup options [See related doc](https://docs.temporal.io/develop/typescript/core-application#workflow-parameters) |
+| `setWorkflowId`        | `(req: Request) => string`                | Function to define a unique workflow identifier based on the request                                                         |
+| `isExposed`            | `boolean`                                 | Indicates if the task should be exposed via an Express API                                                                   |
+| `method`               | `'get', 'post', 'put', 'patch', 'delete'` | HTTP method of the endpoint `Required if isExposed is true`                                                                  |
+| `endpoint`             | `string`                                  | Endpoint URL `Required if isExposed is true`                                                                                 |
+| `prefixUrl`            | `string`                                  | Endpoint URL prefix `Default: /tasks`                                                                                        |
 
-#### Exemple d'utilisation :
+#### Usage Example:
 
 ```typescript
 import {Request} from 'express';
@@ -103,92 +103,26 @@ const exampleTask = new Task(login, {
 
 ---
 
-### TaskQueue
+## 📂 Recommended Project Structure
 
-Une **TaskQueue** est une file d'attente regroupant plusieurs `Task`. Chaque queue est associée à un `Worker` qui exécute les workflows.
-
-#### Options disponibles :
-
-| Option              | Type                           | Description                                                                                                                                                                |
-| ------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `getDataConverter`  | `() => Promise<DataConverter>` | Permet d'utiliser un convertisseur de données personnalisé (ex: chiffrement) [Voir la doc associée](https://docs.temporal.io/develop/typescript/converters-and-encryption) |
-| `connectionOptions` | `ConnectionOptions`            | Options de connexion à Temporal [Voir la doc associée](https://docs.temporal.io/develop/typescript/core-application#connect-to-temporal-cloud)                             |
-| `clientOptions`     | `ClientOptions`                | Options du client Temporal [Voir la doc associée](https://docs.temporal.io/develop/typescript/core-application#connect-to-a-dev-cluster)                                   |
-
-#### Exemple d'utilisation :
-
-```typescript
-import {TaskQueue, getDataConverter} from 'jobar';
-
-const exampleTaskQueue = new TaskQueue('example', {
-	getDataConverter, // Chiffrement des données pour Temporal Codec par défaut
-}).addTask(exampleTask);
-```
-
----
-
-### Jobar
-
-**Jobar** est le moteur central qui orchestre les workflows, connecte les workers à Temporal, et expose les tâches en API Express.
-
-#### Options disponibles :
-
-| Option                   | Type      | Description                                                                 |
-| ------------------------ | --------- | --------------------------------------------------------------------------- |
-| `app`                    | `Express` | Instance de l'application Express                                           |
-| `workflowsPath`          | `string`  | Chemin des workflows                                                        |
-| `temporalAddress`        | `string`  | Adresse du serveur Temporal                                                 |
-| `logger`                 | `Logger`  | Instance de Winston pour la journalisation `Défaut: Logger Winston default` |
-| `logLevel`               | `string`  | Niveau de journalisation (`debug`, `info`, `error`, etc.) `Défaut: debug`   |
-| `namespace`              | `string`  | Namespace utilisé dans Temporal `Défaut: default`                           |
-| `defaultStatusCodeError` | `number`  | Code HTTP d'erreur par défaut `Défaut: 500`                                 |
-
-#### Exemple d'utilisation :
-
-```typescript
-# src/index.ts
-
-import express from 'express';
-import Jobar from 'jobar';
-import exampleTaskQueue from './tasks/example';
-import activities from './activities';
-
-const app = express();
-app.use(express.json());
-
-const jobar = new Jobar({
-	app,
-	workflowsPath: require.resolve('./workflows'),
-	temporalAddress: 'localhost:7233',
-});
-
-jobar.addTaskQueue(exampleTaskQueue).run({activities});
-
-app.listen(3000, () => console.log('Server running on port 3000'));
-```
-
----
-
-## 📂 Structure de projet conseillé
-
-Vous pouvez utiliser ce modèle tel un framework
+You can use this model as a framework
 
 ```
 your-project/
 ├── src/
-│   ├── activities/     # Gestion des activités
-│   |   └── index.ts    # Exportez toutes vos activités dans une variable par défaut nommée `activities`
-│   ├── tasks/          # Gestion des tâches et files d'attente
-│   ├── workflows/      # Gestion des workflows
-│   |   └── index.ts    # Exportez tous vos workflows visibles par l'option `workflowsPath`
-│   └── index.ts        # Point d'entrée
+│   ├── activities/     # Activity management
+│   |   └── index.ts    # Export all activities in a default variable named `activities`
+│   ├── tasks/          # Task and queue management
+│   ├── workflows/      # Workflow management
+│   |   └── index.ts    # Export all workflows visible through the `workflowsPath` option
+│   └── index.ts        # Entry point
 ```
 
 ---
 
-## 💻 Exemple d'utilisation
+## 💻 Usage Example
 
-Retrouvez des exemples sur le repo officiel [🔗 Github Examples](https://github.com/william-donnette/jobar/tree/main/examples)
+Find examples in the official repository [🔗 Github Examples](https://github.com/william-donnette/jobar/tree/main/examples)
 
 -   [Hello World](https://github.com/william-donnette/jobar/tree/main/examples/hello-world)
 -   [Encrypted Data](https://github.com/william-donnette/jobar/tree/main/examples/encrypted-data)

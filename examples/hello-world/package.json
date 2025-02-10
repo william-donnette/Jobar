@@ -1,0 +1,22 @@
+{
+	"name": "jobar-examples/hello-world",
+	"version": "0.0.1",
+	"description": "Example for Jobar - Hello World",
+	"main": "index.ts",
+	"scripts": {
+		"test": "nyc mocha --exit --require ts-node/register --require source-map-support/register **/*.spec.ts",
+		"dev": "nodemon index.ts",
+		"build": "tsc --build",
+		"start": "node lib/index.js",
+		"dev:link": "cd ../../ && npm run build && npm link && cd examples/hello-world/ && npm link jobar && npm run dev"
+	},
+	"author": "William Donnette",
+	"license": "MIT",
+	"devDependencies": {
+		"mocha": "^11.1.0",
+		"nyc": "^17.1.0"
+	},
+	"dependencies": {
+		"jobar": "^1.0.15"
+	}
+}

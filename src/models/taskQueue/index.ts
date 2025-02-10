@@ -21,31 +21,17 @@ interface TaskQueueConfig {
 }
 
 export class TaskQueue {
-	static readonly tasksQueues: Array<TaskQueue> = [];
 	private readonly tasks: Array<Task> = [];
 	private readonly options: TaskQueueOptions = {};
-	private readonly _name: string;
+	private _name: string;
 
-	private constructor(_name: string, options: TaskQueueOptions = {}) {
+	constructor(_name: string, options: TaskQueueOptions = {}) {
 		this._name = _name;
 		this.options = options;
 	}
 
 	get name() {
 		return camelize(this._name);
-	}
-
-	static create(name: string, options?: TaskQueueOptions) {
-		const taskQueue = new TaskQueue(name, options);
-		if (this.tasksQueues.map((taskQueue) => taskQueue.name).includes(taskQueue.name)) {
-			throw new Error('❌ A TaskQueue with same name already exist.');
-		}
-		this.tasksQueues.push(taskQueue);
-		return taskQueue;
-	}
-
-	static clear() {
-		this.tasksQueues.splice(0, this.tasksQueues.length);
 	}
 
 	addTask(task: Task) {
@@ -79,7 +65,7 @@ export class TaskQueue {
 	async createNewConnection(config: TaskConfig) {
 		const {temporalAddress, logger} = config;
 		const {connectionOptions} = this.options;
-		logger.info(`🔷 New connection on ${connectionOptions?.address ?? temporalAddress}.`);
+		logger.info(`New connection on ${connectionOptions?.address ?? temporalAddress}`);
 		return await Connection.connect({
 			address: temporalAddress,
 			...connectionOptions,
@@ -92,7 +78,8 @@ export class TaskQueue {
 		const {clientOptions} = this.options;
 		const connection = await this.createNewConnection(config);
 		const dataConverter = await this.getDataConverter();
-		logger.info(`🔐 New ${dataConverter ? 'crypted' : ''} client on ${clientOptions?.namespace ?? namespace}.`);
+		const isCrypted = !!dataConverter;
+		logger.info(`${isCrypted ? '🔐 New crypted' : 'New'} client on ${clientOptions?.namespace ?? namespace}`);
 		return new Client({
 			connection,
 			namespace: namespace,
@@ -120,7 +107,7 @@ export class TaskQueue {
 		logger.debug(`🚩🚩🚩 ${this._name.toUpperCase()} 🚩🚩🚩`);
 		worker.run();
 		for (const task of this.tasks) {
-			logger.debug(`🔷 ${task.name}`);
+			logger.debug(`${task.name}`);
 			if (task.isExposed) {
 				task.run({app, logger, namespace, temporalAddress});
 			}

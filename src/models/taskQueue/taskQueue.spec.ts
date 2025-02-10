@@ -6,35 +6,7 @@ describe('TaskQueue', () => {
 	let taskQueue: TaskQueue;
 
 	beforeEach(() => {
-		taskQueue = TaskQueue.create('testQueue');
-	});
-
-	afterEach(() => {
-		TaskQueue.clear();
-	});
-
-	describe('create()', () => {
-		it('should create a TaskQueue with the specified name', () => {
-			assert.strictEqual(taskQueue.name, 'testQueue');
-		});
-
-		it('should throw an error when creating a TaskQueue with the same name', () => {
-			assert.throws(
-				() => {
-					TaskQueue.create('testQueue'); // Réessaye de créer une TaskQueue avec le même nom
-				},
-				{
-					message: '❌ A TaskQueue with same name already exist.',
-				}
-			);
-		});
-	});
-
-	describe('clear()', () => {
-		it('should remove all the TaskQueues', () => {
-			TaskQueue.clear();
-			assert.strictEqual(TaskQueue.tasksQueues.length, 0);
-		});
+		taskQueue = new TaskQueue('testQueue');
 	});
 
 	describe('addTask()', () => {

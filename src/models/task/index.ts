@@ -7,10 +7,10 @@ import {TaskQueue} from '../taskQueue';
 
 export interface TaskOptions {
 	workflowStartOptions?: WorkflowStartOptions;
-	setWorkflowId?: (req: Express.Request) => string;
+	setWorkflowId?: (req: Request) => string;
 	isExposed?: boolean;
 	method?: 'get' | 'post' | 'put' | 'patch' | 'delete';
-	path?: string;
+	endpoint?: string;
 	prefixUrl?: string;
 }
 
@@ -31,15 +31,15 @@ export class Task {
 	}
 
 	get url() {
-		const {prefixUrl, path} = this.options;
-		return `/${prefixUrl ?? 'tasks'}/${path ?? this.name}`;
+		const {prefixUrl, endpoint} = this.options;
+		return `/${prefixUrl ?? 'tasks'}/${endpoint ?? this.name}`;
 	}
 
 	get method() {
 		if (this.isExposed && this.options?.method) {
 			return this.options.method;
 		}
-		throw new Error('Set methode to "get" | "post" | "put" | "patch" | "delete" in the options of this task to enable route creation');
+		throw new Error('Set method to "get" | "post" | "put" | "patch" | "delete" in the options of this task to enable route creation');
 	}
 
 	get isExposed() {
@@ -65,7 +65,7 @@ export class Task {
 		}
 	}
 
-	getWorkflowId(req: Express.Request) {
+	getWorkflowId(req: Request) {
 		const {setWorkflowId} = this.options ?? {};
 		const workflowId = setWorkflowId ? setWorkflowId(req) : 'workflow-' + this.name;
 		return formatId(workflowId);
@@ -77,7 +77,7 @@ export class Task {
 		if (!this.isExposed) {
 			throw new Error('❌ Set isExposed to true in the options of this task to enable route creation');
 		}
-		logger.debug(`${this.info} listening`);
+		logger.debug(`🚀 ${this.info} listening`);
 		app[this.method](this.url, async (req: Request, res: Response) => {
 			logger.debug(`${this.info} requested`);
 			if (!this.taskQueue) {
@@ -93,7 +93,7 @@ export class Task {
 					taskQueue: this.taskQueue.name,
 					workflowId,
 				});
-				logger.info(`🚀 WORKFLOW ${workflowId} running`);
+				logger.info(`⌛ WORKFLOW ${workflowId} running`);
 				const response = await handle.result();
 				logger.info(`✅ WORKFLOW ${workflowId} ended`);
 				res.json(response);

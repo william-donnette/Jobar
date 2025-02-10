@@ -18,6 +18,7 @@ interface JobarConfig {
 }
 
 export class Jobar {
+	private readonly tasksQueues: Array<TaskQueue> = [];
 	app: Express;
 	activities: WorkerOptions['activities'];
 	workflowsPath: string;
@@ -35,13 +36,21 @@ export class Jobar {
 		this.logger = logger ?? getDefaultLogger(this.logLevel);
 	}
 
+	addTaskQueue(taskQueue: TaskQueue) {
+		if (this.tasksQueues.map((taskQueue) => taskQueue.name).includes(taskQueue.name)) {
+			throw new Error('❌ A TaskQueue with same name already exist.');
+		}
+		this.tasksQueues.push(taskQueue);
+		return this;
+	}
+
 	async run({activities}: JobarConfig) {
-		this.logger.info(`🚀 Try to connect to temporal on ${this.temporalAddress}...`);
+		this.logger.info(`🚀 Try to connect to temporal on ${this.temporalAddress}..`);
 		const connection = await NativeConnection.connect({
 			address: this.temporalAddress,
 		});
-		this.logger.info(`✅ Connected to temporal.`);
-		for (const taskQueue of TaskQueue.tasksQueues) {
+		this.logger.info(`✅ Connected to temporal`);
+		for (const taskQueue of this.tasksQueues) {
 			taskQueue.run({
 				app: this.app,
 				connection,

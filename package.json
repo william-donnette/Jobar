@@ -1,6 +1,6 @@
 {
 	"name": "jobar",
-	"version": "1.0.15",
+	"version": "1.1.0",
 	"description": "",
 	"main": "./dist/index.js",
 	"module": "./dist/index.mjs",
@@ -19,6 +19,7 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@temporalio/testing": "^1.11.7",
+		"@types/cors": "^2.8.17",
 		"@types/express": "^5.0.0",
 		"@types/mocha": "^10.0.10",
 		"eslint": "^9.12.0",
@@ -32,6 +33,7 @@
 		"@temporalio/client": "^1.11.7",
 		"@temporalio/worker": "^1.11.7",
 		"@temporalio/workflow": "^1.11.7",
+		"cors": "^2.8.5",
 		"dotenv": "^16.4.5",
 		"express": "^4.21.2",
 		"ts-node": "^10.9.2",

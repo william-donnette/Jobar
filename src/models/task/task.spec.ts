@@ -8,17 +8,13 @@ describe('Task', () => {
 	let task: Task;
 
 	beforeEach(() => {
-		const taskQueue = TaskQueue.create('testQueue');
+		const taskQueue = new TaskQueue('testQueue');
 		task = new Task(mockWorkflow, {
 			isExposed: true,
 			method: 'post',
-			path: 'mockWorkflow',
+			endpoint: 'mockWorkflow',
 		});
 		taskQueue.addTask(task);
-	});
-
-	afterEach(() => {
-		TaskQueue.clear();
 	});
 
 	describe('name', () => {
@@ -41,7 +37,7 @@ describe('Task', () => {
 		it('should throw an error if method is not set', () => {
 			const taskWithoutMethod = new Task(mockWorkflow, {isExposed: true});
 			assert.throws(() => taskWithoutMethod.method, {
-				message: /Set methode to "get" \| "post" \| "put" \| "patch" \| "delete"/,
+				message: /Set method to "get" \| "post" \| "put" \| "patch" \| "delete"/,
 			});
 		});
 	});
@@ -54,7 +50,7 @@ describe('Task', () => {
 
 	describe('setTaskQueue', () => {
 		it("should throw an error if the taskQueue don't have the task", () => {
-			const taskQueue2 = TaskQueue.create('testQueue2');
+			const taskQueue2 = new TaskQueue('testQueue2');
 			assert.throws(
 				() => {
 					task.setTaskQueue(taskQueue2);

@@ -28,3 +28,15 @@ curl --location 'localhost:3000/tasks/login' --header 'Content-Type: application
 ```
 
 Vous pouvez ensuite vous rendre sur le Dashboard Temporal UI pour voir votre activité
+
+## Explication
+
+C'est dans la TaskQueue que l'instanciation du cryptage se fait et permet d'utiliser un convertisseur de données personnalisé (ex: chiffrement) [Voir la doc associée](https://docs.temporal.io/develop/typescript/converters-and-encryption)
+
+```typescript
+import {TaskQueue, getDataConverter} from 'jobar';
+
+const exampleTaskQueue = new TaskQueue('example', {
+	getDataConverter, // Chiffrement des données pour Temporal Codec par défaut
+}).addTask(exampleTask);
+```

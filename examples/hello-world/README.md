@@ -28,3 +28,9 @@ curl --location 'localhost:3000/tasks/helloWorld' --header 'Content-Type: applic
 ```
 
 Vous pouvez ensuite vous rendre sur le Dashboard Temporal UI pour voir votre activité
+
+---
+
+## 📷 Aperçu du Workflow HelloWorld sur le Dashboard Temporal
+
+![Temporal Dashboard](./img/dashboard-workflow-hello-world.png)

@@ -2,8 +2,6 @@
 	"reporter": ["lcov", "text-summary"],
 	"report-dir": "./coverage",
 	"all": true,
-	"extends": "@istanbuljs/nyc-config-typescript",
-	"require": ["ts-node/register", "source-map-support/register"],
-	"include": ["**/*.ts"],
-	"exclude": ["**/*.spec.ts"]
+	"include": ["src/**/*.ts"],
+	"exclude": ["src/**/*.spec.ts"]
 }

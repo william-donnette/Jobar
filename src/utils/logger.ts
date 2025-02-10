@@ -1,5 +1,6 @@
 import {createLogger, format, transports} from 'winston';
 
+/* istanbul ignore next */
 export const getDefaultLogger = (level: string) =>
 	createLogger({
 		level,

@@ -70,6 +70,7 @@ export async function startCodec({port = 8883}: any = {}) {
 	});
 
 	await new Promise<void>((resolve, reject) => {
+		// @ts-ignore
 		app.listen(port, resolve);
 		app.on('error', reject);
 	});

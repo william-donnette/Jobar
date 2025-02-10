@@ -25,6 +25,7 @@
 		"typescript": "^5.7.3"
 	},
 	"dependencies": {
-		"express": "^4.21.2"
+		"express": "^4.21.2",
+		"jobar": "^1.2.0"
 	}
 }

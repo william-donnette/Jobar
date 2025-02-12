@@ -1,8 +1,8 @@
 import {MockActivityEnvironment} from '@temporalio/testing';
 import assert from 'assert';
+import {JobarError} from 'jobar';
 import {describe, it} from 'mocha';
 import {hardcodedPasswordLogin} from '.';
-import {JobarError} from '../../../../../dist';
 
 describe('hardcodedPasswordLogin activity', async () => {
 	it('successfully login', async () => {

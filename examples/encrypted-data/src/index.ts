@@ -8,10 +8,10 @@ app.use(express.json());
 
 const jobar = new Jobar({
 	app,
-	workflowsPath: require.resolve('./src/workflows'),
-	temporalAddress: 'localhost:7233',
+	workflowsPath: require.resolve('./workflows'),
+	temporalAddress: process.env.TEMPORAL_ADDRESS ?? 'localhost:7233',
 });
 
 jobar.addTaskQueue(exampleTaskQueue).run({activities});
 
-app.listen(3000, () => console.log('Server is running on port 3000'));
+app.listen(process.env.JOBAR_PORT, () => console.log(`Server is running on port ${process.env.JOBAR_PORT}`));

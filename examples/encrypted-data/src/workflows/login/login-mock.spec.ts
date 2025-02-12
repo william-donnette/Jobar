@@ -2,9 +2,9 @@ import {WorkflowFailedError} from '@temporalio/client';
 import {MockActivityEnvironment, TestWorkflowEnvironment} from '@temporalio/testing';
 import {Worker} from '@temporalio/worker';
 import assert from 'assert';
+import {JobarError} from 'jobar';
 import {before, describe, it} from 'mocha';
 import {login} from '.';
-import {JobarError} from '../../../../../dist';
 
 describe('Login workflow with mocks', () => {
 	let testEnv: TestWorkflowEnvironment;

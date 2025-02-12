@@ -1,11 +1,13 @@
 {
+	"extends": "@tsconfig/node16/tsconfig.json",
+	"version": "4.4.2",
 	"compilerOptions": {
-		"target": "ES2022",
-		"module": "NodeNext",
-		"moduleResolution": "NodeNext",
-		"esModuleInterop": true,
-		"skipLibCheck": true,
-		"strict": true
+		"declaration": true,
+		"moduleResolution": "Node16",
+		"declarationMap": true,
+		"sourceMap": true,
+		"rootDir": ".",
+		"outDir": "./lib"
 	},
-	"include": ["**/*.ts"]
+	"include": ["src/**/*.ts"]
 }

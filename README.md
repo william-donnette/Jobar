@@ -216,6 +216,9 @@ Find examples in the official repository [🔗 Github Examples](https://github.c
 -   🦊 [GitLab](https://gitlab.com/william-donnette/jobar)
 -   🦊 [GitLab Examples](https://gitlab.com/william-donnette/jobar/-/tree/main/examples?ref_type=heads)
 -   📚 [Temporal TypeScript SDK Documentation](https://docs.temporal.io/develop/typescript/)
+-   📦 [NPM Create Jobar App](https://www.npmjs.com/package/create-jobar-app)
+-   🐙 [GitHub Create Jobar App](https://github.com/william-donnette/create-jobar-app)
+-   🦊 [GitLab Create Jobar App](https://gitlab.com/william-donnette/create-jobar-app)
 
 ---
 

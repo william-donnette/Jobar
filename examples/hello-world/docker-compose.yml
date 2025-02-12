@@ -55,7 +55,7 @@ services:
             - temporal
         environment:
             - TEMPORAL_ADDRESS=temporal:${TEMPORAL_PORT}
-            - TEMPORAL_CORS_ORIGINS=http://localhost:${JOBAR_PORT}
+            - TEMPORAL_CORS_ORIGINS=http://localhost:3002
             - TEMPORAL_NOTIFY_ON_NEW_VERSION=true
         networks:
             - temporal-network
@@ -71,7 +71,7 @@ services:
         networks:
             - temporal-network
         ports:
-            - 3333:${JOBAR_PORT}
+            - 3333:3002
 networks:
     temporal-network:
         driver: bridge

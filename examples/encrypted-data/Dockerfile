@@ -35,7 +35,6 @@ COPY --from=builder /usr/src/app/package.json ./package.json
 
 ENV TEMPORAL_PORT=7233
 ENV TEMPORAL_ADDRESS="temporal:7233"
-ENV JOBAR_PORT=3002
 
 EXPOSE 3002
 

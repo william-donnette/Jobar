@@ -20,6 +20,12 @@ For the best project structure, we recommend using the following command:
 npm create jobar-app@latest my-app -- --template=hello-world
 ```
 
+You can now test it easily with **Docker**:
+
+```sh
+cd my-app && docker compose up -d
+```
+
 ---
 
 ## 📌 Features

@@ -1,6 +1,6 @@
 {
 	"name": "jobar",
-	"version": "1.2.5",
+	"version": "1.2.6",
 	"description": "Jobar is a TypeScript library designed to orchestrate workflows with Temporal and expose them seamlessly via an Express API. It simplifies Temporal integration by managing workflows, activities, and task queues while providing a structured way to handle API endpoints for workflow execution.",
 	"keywords": [
 		"jobar",

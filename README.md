@@ -14,6 +14,12 @@ npm install jobar
 yarn add jobar
 ```
 
+For the best project structure, we recommend using the following command:
+
+```sh
+npm create jobar-app@latest my-app -- --template=hello-world
+```
+
 ---
 
 ## 📌 Features
@@ -196,7 +202,7 @@ Find examples in the official repository [🔗 Github Examples](https://github.c
 
 ---
 
-## 🔗 Liens
+## 🔗 Links
 
 -   📦 [NPM](https://www.npmjs.com/package/jobar)
 -   🐙 [GitHub](https://github.com/william-donnette/jobar)
@@ -204,6 +210,18 @@ Find examples in the official repository [🔗 Github Examples](https://github.c
 -   🦊 [GitLab](https://gitlab.com/william-donnette/jobar)
 -   🦊 [GitLab Examples](https://gitlab.com/william-donnette/jobar/-/tree/main/examples?ref_type=heads)
 -   📚 [Temporal TypeScript SDK Documentation](https://docs.temporal.io/develop/typescript/)
+
+---
+
+## 📝 Contributing
+
+Contributions are welcome!
+
+-   Fork the repository
+-   Create a feature branch: `git checkout -b feature-my-feature`
+-   Commit your changes: `git commit -m 'Add my feature'`
+-   Push to the branch: `git push origin feature-my-feature`
+-   Open a Pull Request 🚀
 
 ---
 

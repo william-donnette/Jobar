@@ -1,19 +1,22 @@
-interface JobarErrorOptions {
-	statusCode?: number;
-	errorCode?: string | number;
-	description?: string;
+export interface JobarErrorOptions {
+	status?: number;
+	error?: string;
+	details?: any;
 }
 
 export class JobarError extends Error {
 	constructor(message: string, options: JobarErrorOptions = {}) {
-		const {statusCode, errorCode, description} = options;
+		const {status = 500, error, details} = options;
 		super(
 			JSON.stringify({
 				isJobarError: true,
 				message,
-				statusCode,
-				errorCode: errorCode ?? 'internal_server_error',
-				description: description ?? 'Activity task failed',
+				status,
+				error: error ?? 'internal_server_error',
+				details: details ?? {
+					activity: 'Activity Task Failed.',
+					workflow: 'Internal Server Error.',
+				},
 			})
 		);
 	}

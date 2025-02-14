@@ -20,7 +20,6 @@ export interface TaskConfig {
 	logger: Logger;
 	namespace: string;
 	temporalAddress: string;
-	defaultStatusCodeError: number;
 }
 
 export class Task {
@@ -41,7 +40,7 @@ export class Task {
 		if (this.isExposed && this.options?.method) {
 			return this.options.method;
 		}
-		throw new Error('Set method to "get" | "post" | "put" | "patch" | "delete" in the options of this task to enable route creation');
+		return;
 	}
 
 	get isExposed() {
@@ -56,7 +55,10 @@ export class Task {
 	}
 
 	get info() {
-		return `${this.method.toUpperCase()} ${this.url}`;
+		if (this.isExposed && this.method) {
+			return `Task ${this.name} is exposed on ${this.method.toUpperCase()} ${this.url}`;
+		}
+		return `Task ${this.name}`;
 	}
 
 	setTaskQueue(taskQueue: TaskQueue) {
@@ -75,9 +77,12 @@ export class Task {
 
 	/* istanbul ignore next */
 	async run(config: TaskConfig) {
-		const {app, logger, defaultStatusCodeError} = config;
+		const {app, logger} = config;
 		if (!this.isExposed) {
 			throw new Error('❌ Set isExposed to true in the options of this task to enable route creation');
+		}
+		if (!this.method) {
+			throw new Error('❌ Set method to "get" | "post" | "put" | "patch" | "delete" in the options of this task to enable route creation');
 		}
 		logger.info(`${this.info} listening`);
 		app[this.method](this.url, async (req: Request, res: Response) => {
@@ -110,10 +115,10 @@ export class Task {
 					logger.warn('⚠️ Prefer to use JobarError in your activities');
 				}
 				logger.error(`❌ WORKFLOW ${workflowId} failed : ${message?.message ?? defaultMessage.message}`);
-				res.status(message.statusCode ?? defaultStatusCodeError).json({
-					error: message?.message ?? defaultMessage.message,
-					error_description: message?.description ?? defaultMessage.description,
-					error_code: message?.errorCode ?? defaultMessage.errorCode,
+				res.status(message.status).json({
+					message: message?.message ?? defaultMessage.message,
+					details: message?.details ?? defaultMessage.details,
+					error: message?.error ?? defaultMessage.error,
 				});
 			}
 		});

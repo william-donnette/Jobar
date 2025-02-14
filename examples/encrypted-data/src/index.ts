@@ -16,4 +16,4 @@ const jobar: Jobar = new Jobar({
 
 jobar.addTaskQueue(exampleTaskQueue).run({activities});
 
-app.listen(PORT, HOSTNAME, () => console.log(`Server is running on port ${PORT}`));
+app.listen(PORT, HOSTNAME, () => console.log(`Server is running on ${HOSTNAME}:${PORT}`));

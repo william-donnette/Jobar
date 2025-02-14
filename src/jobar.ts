@@ -1,6 +1,7 @@
 import {NativeConnection, WorkerOptions} from '@temporalio/worker';
 import {Express} from 'express';
 import {Logger} from 'winston';
+import {JobarError, JobarErrorOptions} from './models/error';
 import {TaskQueue} from './models/taskQueue';
 import {getDefaultLogger} from './utils/logger';
 
@@ -55,6 +56,13 @@ export class Jobar {
 		return this;
 	}
 
+	error(message: string, options: JobarErrorOptions = {}) {
+		return new JobarError(message, {
+			status: this.defaultStatusCodeError,
+			...options,
+		});
+	}
+
 	async run({activities}: JobarConfig) {
 		this.logger.info(`🚀 Try to connect to temporal on ${this.temporalAddress}..`);
 		const connection = await NativeConnection.connect({
@@ -68,7 +76,6 @@ export class Jobar {
 				logger: this.logger,
 				namespace: this.namespace,
 				temporalAddress: this.temporalAddress,
-				defaultStatusCodeError: this.defaultStatusCodeError,
 				workerOptions: {
 					taskQueue: taskQueue.name,
 					workflowsPath: this.workflowsPath,

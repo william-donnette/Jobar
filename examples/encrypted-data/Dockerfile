@@ -27,7 +27,7 @@ FROM base AS prod
 
 ENV NODE_ENV production
 
-COPY --from=builder /usr/src/app/lib ./lib
+COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/.env ./.env
 COPY --from=builder /usr/src/app/package.json ./package.json
@@ -38,7 +38,7 @@ ENV TEMPORAL_ADDRESS="temporal:7233"
 
 EXPOSE 3002
 
-ENV PORT=3002
-ENV HOSTNAME="0.0.0.0"
+ENV APP_PORT=3002
+ENV APP_HOSTNAME="0.0.0.0"
 
 ENTRYPOINT ["npm", "run", "start"]

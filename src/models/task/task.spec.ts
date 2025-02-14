@@ -34,17 +34,15 @@ describe('Task', () => {
 			assert.strictEqual(task.method, 'post');
 		});
 
-		it('should throw an error if method is not set', () => {
+		it('should return undefined', () => {
 			const taskWithoutMethod = new Task(mockWorkflow, {isExposed: true});
-			assert.throws(() => taskWithoutMethod.method, {
-				message: /Set method to "get" \| "post" \| "put" \| "patch" \| "delete"/,
-			});
+			assert.strictEqual(taskWithoutMethod.method, undefined);
 		});
 	});
 
 	describe('info', () => {
 		it('should return the correct info', () => {
-			assert.strictEqual(task.info, 'POST /tasks/mockWorkflow');
+			assert.equal(task.info, 'Task mockWorkflow is exposed on POST /tasks/mockWorkflow');
 		});
 	});
 

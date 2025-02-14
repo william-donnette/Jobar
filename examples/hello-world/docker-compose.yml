@@ -35,19 +35,6 @@ services:
             interval: 30s
             timeout: 10s
             retries: 5
-    temporal-admin-tools:
-        image: temporalio/admin-tools:${TEMPORAL_ADMINTOOLS_VERSION}
-        container_name: temporal-admin-tools
-        depends_on:
-            temporal:
-                condition: service_healthy
-        environment:
-            - TEMPORAL_ADDRESS=temporal:${TEMPORAL_PORT}
-            - TEMPORAL_CLI_ADDRESS=temporal:${TEMPORAL_PORT}
-        networks:
-            - temporal-network
-        stdin_open: true
-        tty: true
     temporal-ui:
         image: temporalio/ui:${TEMPORAL_UI_VERSION}
         container_name: temporal-ui

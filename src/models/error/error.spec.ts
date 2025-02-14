@@ -7,17 +7,18 @@ describe('JobarError', () => {
 		const parsedError = JSON.parse(error.message);
 		assert.strictEqual(parsedError.isJobarError, true);
 		assert.strictEqual(parsedError.message, 'Test error');
-		assert.strictEqual(parsedError.errorCode, 'internal_server_error');
-		assert.strictEqual(parsedError.description, 'Activity task failed');
+		assert.strictEqual(parsedError.status, 500);
+		assert.strictEqual(parsedError.error, 'internal_server_error');
+		assert.notStrictEqual(parsedError.details, {activity: 'Activity Task Failed.', workflow: 'Internal Server Error.'});
 	});
 
 	it('should create a JobarError instance with custom values', () => {
-		const error = new JobarError('Custom error', {statusCode: 404, errorCode: 'not_found', description: 'Resource not found'});
+		const error = new JobarError('Custom error', {status: 404, error: 'not_found', details: 'Resource not found'});
 		const parsedError = JSON.parse(error.message);
 		assert.strictEqual(parsedError.isJobarError, true);
 		assert.strictEqual(parsedError.message, 'Custom error');
-		assert.strictEqual(parsedError.statusCode, 404);
-		assert.strictEqual(parsedError.errorCode, 'not_found');
-		assert.strictEqual(parsedError.description, 'Resource not found');
+		assert.strictEqual(parsedError.status, 404);
+		assert.strictEqual(parsedError.error, 'not_found');
+		assert.strictEqual(parsedError.details, 'Resource not found');
 	});
 });

@@ -1,1 +1,0 @@
-{"root":["../src/index.ts","../src/activities/index.ts","../src/activities/say-hello/index.ts","../src/activities/say-hello/say-hello.spec.ts","../src/tasks/hello-world.ts","../src/workflows/index.ts","../src/workflows/hello-world/hello-world-mocks.spec.ts","../src/workflows/hello-world/hello-world.spec.ts","../src/workflows/hello-world/index.ts"],"version":"5.7.3"}

@@ -101,7 +101,7 @@ A **Task** represents a unit of work associated with a Temporal workflow. It can
 | ------------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `workflowStartOptions`    | `WorkflowStartOptions`                    | Workflow startup options [See related doc](https://docs.temporal.io/develop/typescript/core-application#workflow-parameters) |
 | `setWorkflowId`           | `(req: Request) => string`                | Function to define a unique workflow identifier based on the request                                                         |
-| `isExposed`               | `boolean`                                 | Indicates if the task should be exposed via an Express API                                                                   |
+| `isExposed`               | `boolean`                                 | Indicates if the task should be exposed via an Express API `Default: false`                                                  |
 | `method`                  | `'get', 'post', 'put', 'patch', 'delete'` | HTTP method of the endpoint `Required if isExposed is true`                                                                  |
 | `endpoint`                | `string`                                  | Endpoint URL `Required if isExposed is true`                                                                                 |
 | `prefixUrl`               | `string`                                  | Endpoint URL prefix `Default: /tasks`                                                                                        |

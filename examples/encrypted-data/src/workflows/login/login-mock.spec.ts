@@ -53,10 +53,9 @@ describe('Login workflow with mocks', () => {
 			workflowsPath: require.resolve('..'),
 			activities: {
 				hardcodedPasswordLogin: async () => {
-					throw new JobarError('Unauthorized', {
+					throw new JobarError('Bad Credentials', {
 						statusCode: 401,
-						errorCode: 'unauthorized',
-						description: 'Bad credentials',
+						error: 'Unauthorized',
 					});
 				},
 			},
@@ -79,9 +78,9 @@ describe('Login workflow with mocks', () => {
 			const jobarError = activityError?.cause;
 			const activityResponse = JSON.parse(jobarError?.message ?? '');
 			assert(error instanceof WorkflowFailedError);
-			assert.equal(activityResponse.message, 'Unauthorized');
-			assert.equal(activityResponse.statusCode, 401);
-			assert.equal(activityResponse.errorCode, 'unauthorized');
+			assert.equal(activityResponse.message, 'Bad Credentials');
+			assert.equal(activityResponse.options.statusCode, 401);
+			assert.equal(activityResponse.options.error, 'Unauthorized');
 		}
 	}).timeout(20000); //20 sec
 });

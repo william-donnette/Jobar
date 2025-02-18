@@ -69,9 +69,9 @@ describe('Login workflow', () => {
 			const jobarError = activityError?.cause;
 			const activityResponse = JSON.parse(jobarError?.message ?? '');
 			assert(error instanceof WorkflowFailedError);
-			assert.equal(activityResponse.message, 'Unauthorized');
-			assert.equal(activityResponse.statusCode, 401);
-			assert.equal(activityResponse.errorCode, 'unauthorized');
+			assert.equal(activityResponse.message, 'Bad Credentials');
+			assert.equal(activityResponse.options.statusCode, 401);
+			assert.equal(activityResponse.options.error, 'Unauthorized');
 		}
 	}).timeout(20000); //20 sec
 });

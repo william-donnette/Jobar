@@ -26,8 +26,8 @@
 		"access": "public"
 	},
 	"scripts": {
-		"test": "nyc mocha --exit --require ts-node/register --require source-map-support/register src/**/*.spec.ts && npm run open-coverage-report",
-		"open-coverage-report": "node -e \"const os = require('os'); const path = 'coverage/lcov-report/index.html'; if (os.platform() === 'darwin') { require('child_process').execSync('open ' + path); } else if (os.platform() === 'win32') { require('child_process').execSync('start ' + path); } else { require('child_process').execSync('xdg-open ' + path); }\"",
+		"test": "nyc mocha --exit --require ts-node/register --require source-map-support/register src/**/*.spec.ts",
+		"report": "node -e \"const os = require('os'); const path = 'coverage/lcov-report/index.html'; if (os.platform() === 'darwin') { require('child_process').execSync('open ' + path); } else if (os.platform() === 'win32') { require('child_process').execSync('start ' + path); } else { require('child_process').execSync('xdg-open ' + path); }\"",
 		"build": "tsup"
 	},
 	"author": "William Donnette",

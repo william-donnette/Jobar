@@ -3,6 +3,7 @@ import {Express} from 'express';
 import {Logger} from 'winston';
 import {JobarError, JobarErrorOptions} from './models/error';
 import {TaskQueue} from './models/taskQueue';
+import {RequestErrorFunction, onRequestErrorDefault} from './utils';
 import {getDefaultLogger} from './utils/logger';
 
 interface JobarOptions {
@@ -13,6 +14,7 @@ interface JobarOptions {
 	logLevel?: string;
 	namespace?: string;
 	defaultStatusCodeError?: number;
+	onRequestError?: RequestErrorFunction;
 }
 
 interface JobarConfig {
@@ -29,6 +31,7 @@ export class Jobar {
 	logLevel: string;
 	namespace: string;
 	defaultStatusCodeError: number;
+	onRequestError: RequestErrorFunction;
 
 	constructor({
 		app,
@@ -38,6 +41,7 @@ export class Jobar {
 		logLevel = 'debug',
 		namespace = 'default',
 		defaultStatusCodeError = 500,
+		onRequestError,
 	}: JobarOptions) {
 		this.app = app;
 		this.temporalAddress = temporalAddress;
@@ -46,6 +50,7 @@ export class Jobar {
 		this.namespace = namespace;
 		this.logger = logger ?? getDefaultLogger(this.logLevel);
 		this.defaultStatusCodeError = defaultStatusCodeError;
+		this.onRequestError = onRequestError ?? onRequestErrorDefault;
 	}
 
 	addTaskQueue(taskQueue: TaskQueue) {
@@ -60,6 +65,7 @@ export class Jobar {
 		return new JobarError(message, options);
 	}
 
+	/* istanbul ignore next */
 	async run({activities}: JobarConfig) {
 		this.logger.info(`🚀 Try to connect to temporal on ${this.temporalAddress}..`);
 		const connection = await NativeConnection.connect({
@@ -79,6 +85,7 @@ export class Jobar {
 					activities,
 				},
 				defaultStatusCodeError: this.defaultStatusCodeError,
+				onRequestError: this.onRequestError,
 			});
 		}
 	}

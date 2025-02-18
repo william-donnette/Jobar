@@ -38,6 +38,7 @@ function toJSON({metadata, data}: proto.temporal.api.common.v1.IPayload): JSONPa
 	};
 }
 
+/* istanbul ignore next */
 export async function startCodec({port = 8883}: any = {}) {
 	const codec = await EncryptionCodec.create('test-key-id');
 

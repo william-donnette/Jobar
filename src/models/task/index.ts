@@ -1,10 +1,10 @@
 import {Workflow, WorkflowStartOptions} from '@temporalio/client';
+import {WorkflowError} from '@temporalio/workflow';
 import {Express, Request, Response} from 'express';
 import {Logger} from 'winston';
+import {RequestErrorFunction} from '../../utils';
 import {camelize} from '../../utils/camelize';
-import {findLastError} from '../../utils/find-jobar-error-cause';
 import {formatId} from '../../utils/format-id';
-import {JobarError} from '../error';
 import {TaskQueue} from '../taskQueue';
 
 export interface TaskOptions {
@@ -23,6 +23,7 @@ export interface TaskConfig {
 	namespace: string;
 	temporalAddress: string;
 	defaultStatusCodeError: number;
+	onRequestError: RequestErrorFunction;
 }
 
 export class Task {
@@ -77,14 +78,14 @@ export class Task {
 	}
 
 	getWorkflowId(req: Request) {
-		const {setWorkflowId} = this.options ?? {};
+		const {setWorkflowId} = this.options;
 		const workflowId = setWorkflowId ? setWorkflowId(req) : 'workflow-' + this.name;
 		return formatId(workflowId);
 	}
 
 	/* istanbul ignore next */
 	async run(config: TaskConfig) {
-		const {app, logger, defaultStatusCodeError} = config;
+		const {app, logger, onRequestError} = config;
 		if (!this.isExposed) {
 			throw new Error('❌ Set isExposed to true in the options of this task to enable route creation');
 		}
@@ -92,39 +93,28 @@ export class Task {
 			throw new Error('❌ Set method to "get" | "post" | "put" | "patch" | "delete" in the options of this task to enable route creation');
 		}
 		logger.info(`${this.info} listening`);
-		app[this.method](this.url, async (req: Request, res: Response) => {
+		app[this.method](this.url, async (request: Request, response: Response) => {
 			logger.debug(`⌛ ${this.info} requested`);
 			if (!this.taskQueue) {
 				throw new Error('❌ This task is not assigned in a taskQueue.');
 			}
 			const {workflowStartOptions} = this.options ?? {};
-			const workflowId = this.getWorkflowId(req);
+			const workflowId = this.getWorkflowId(request);
 			try {
 				const client = await this.taskQueue.createNewClient(config);
 				const handle = await client.workflow.start(this.workflowFunction, {
 					...workflowStartOptions,
-					args: this.needWorkflowFullRequest ? [req, res] : [req.body, req.headers],
+					args: this.needWorkflowFullRequest ? [request, response] : [request.body, request.headers],
 					taskQueue: this.taskQueue.name,
 					workflowId,
 				});
 				logger.debug(`⌛ WORKFLOW ${workflowId} requested`);
-				const response = await handle.result();
+				const result = await handle.result();
 				logger.debug(`✅ WORKFLOW ${workflowId} ended`);
-				res.json(response);
+				response.json(result);
 			} catch (workflowError: unknown) {
-				const error = findLastError(workflowError);
-				const defaultError = new JobarError('No Message Available');
-				const parsedMessage = JSON.parse(error.message);
-				if (!parsedMessage.isJobarError) {
-					logger.warn('⚠️ Prefer to use JobarError in your activities');
-				}
-				const jobarError = error as JobarError;
-				logger.error(`❌ WORKFLOW ${workflowId} failed : ${jobarError?.message}`);
-				res.status(jobarError?.options?.statusCode ?? defaultStatusCodeError).json({
-					error: jobarError?.options?.error ?? defaultError.options.error,
-					message: jobarError?.message ?? defaultError.message,
-					details: jobarError?.options?.details ?? defaultError.options.details,
-				});
+				logger.error(`❌ WORKFLOW ${workflowId} failed`);
+				onRequestError(workflowId, {workflowError: workflowError as WorkflowError, request, response, taskConfig: config});
 			}
 		});
 	}

@@ -2,6 +2,7 @@ import {Client, ClientOptions, Connection, ConnectionOptions, DataConverter} fro
 import {NativeConnection, Worker, WorkerOptions} from '@temporalio/worker';
 import {Express} from 'express';
 import {Logger} from 'winston';
+import {RequestErrorFunction} from '../../utils';
 import {camelize} from '../../utils/camelize';
 import {Task, TaskConfig} from '../task';
 
@@ -19,6 +20,7 @@ interface TaskQueueConfig {
 	connection: NativeConnection;
 	workerOptions?: WorkerOptions;
 	defaultStatusCodeError: number;
+	onRequestError: RequestErrorFunction;
 }
 
 export class TaskQueue {
@@ -39,9 +41,6 @@ export class TaskQueue {
 		if (this.hasTask(task)) {
 			throw new Error('❌ This task is already in this taskQueue.');
 		}
-		if (this.hasSimilarTask(task)) {
-			throw new Error('❌ A similar task is already in this taskQueue.');
-		}
 		this.tasks.push(task);
 		task.setTaskQueue(this);
 		return this;
@@ -49,10 +48,6 @@ export class TaskQueue {
 
 	hasTask(task: Task) {
 		return this.tasks.map((task) => task.name).includes(task.name);
-	}
-
-	hasSimilarTask(task: Task) {
-		return this.tasks.map((task) => `${task.info}`).includes(task.info);
 	}
 
 	private get exposedTasks() {
@@ -110,14 +105,14 @@ export class TaskQueue {
 
 	/* istanbul ignore next */
 	async run(config: TaskQueueConfig) {
-		const {app, logger, namespace, temporalAddress, defaultStatusCodeError} = config;
+		const {app, logger, namespace, temporalAddress, defaultStatusCodeError, onRequestError} = config;
 		const worker = await this.createWorker(config);
 		logger.info(`🚩 ${this._name.toUpperCase()} installation`);
 		worker.run();
 		for (const task of this.tasks) {
 			logger.info(`🚀 ${task.name} is running`);
 			if (task.isExposed) {
-				task.run({app, logger, namespace, temporalAddress, defaultStatusCodeError});
+				task.run({app, logger, namespace, temporalAddress, defaultStatusCodeError, onRequestError});
 			}
 		}
 	}

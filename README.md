@@ -152,15 +152,16 @@ const exampleTaskQueue = new TaskQueue('example', {
 
 ### Available Options:
 
-| Option                   | Type      | Description                                                     |
-| ------------------------ | --------- | --------------------------------------------------------------- |
-| `app`                    | `Express` | Express application instance                                    |
-| `workflowsPath`          | `string`  | Path to workflows                                               |
-| `temporalAddress`        | `string`  | Temporal server address                                         |
-| `logger`                 | `Logger`  | Winston logger instance `Default: Logger Winston default`       |
-| `logLevel`               | `string`  | Logging level (`debug`, `info`, `error`, etc.) `Default: debug` |
-| `namespace`              | `string`  | Namespace used in Temporal `Default: default`                   |
-| `defaultStatusCodeError` | `number`  | Default HTTP error code `Default: 500`                          |
+| Option                   | Type                   | Description                                                     |
+| ------------------------ | ---------------------- | --------------------------------------------------------------- |
+| `app`                    | `Express`              | Express application instance                                    |
+| `workflowsPath`          | `string`               | Path to workflows                                               |
+| `temporalAddress`        | `string`               | Temporal server address                                         |
+| `logger`                 | `Logger`               | Winston logger instance `Default: Logger Winston default`       |
+| `logLevel`               | `string`               | Logging level (`debug`, `info`, `error`, etc.) `Default: debug` |
+| `namespace`              | `string`               | Namespace used in Temporal `Default: default`                   |
+| `defaultStatusCodeError` | `number`               | Default HTTP error code `Default: 500`                          |
+| `onRequestError`         | `RequestErrorFunction` | Default HTTP onError `Default: onRequestErrorDefault`           |
 
 ### Usage Example:
 

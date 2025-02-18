@@ -17,6 +17,7 @@ export class EncryptionCodec implements PayloadCodec {
 		return new this(keys, keyId);
 	}
 
+	/* istanbul ignore next */
 	async encode(payloads: Payload[]): Promise<Payload[]> {
 		return Promise.all(
 			payloads.map(async (payload) => ({
@@ -33,6 +34,7 @@ export class EncryptionCodec implements PayloadCodec {
 		);
 	}
 
+	/* istanbul ignore next */
 	async decode(payloads: Payload[]): Promise<Payload[]> {
 		return Promise.all(
 			payloads.map(async (payload) => {

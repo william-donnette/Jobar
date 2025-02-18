@@ -15,7 +15,7 @@
 		"**/Thumbs.db": true,
 		"**/dist": true,
 		"**/.nyc_output": true,
-		"**/coverage": true,
+		// "**/coverage": true,
 		"**/logs": true
 	},
 	"workbench.iconTheme": "material-icon-theme"

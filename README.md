@@ -105,7 +105,7 @@ A **Task** represents a unit of work associated with a Temporal workflow. It can
 | `method`                  | `'get', 'post', 'put', 'patch', 'delete'` | HTTP method of the endpoint `Required if isExposed is true`                                                                  |
 | `endpoint`                | `string`                                  | Endpoint URL `Required if isExposed is true`                                                                                 |
 | `prefixUrl`               | `string`                                  | Endpoint URL prefix `Default: /tasks`                                                                                        |
-| `needWorkflowFullRequest` | `boolean`                                 | Give to the workflow the express Request and Response in arguments instead of Body and Headers `Default: /false`             |
+| `needWorkflowFullRequest` | `boolean`                                 | Give to the workflow the express Request and Response in arguments instead of Body and Headers `Default: false`              |
 
 #### Usage Example:
 

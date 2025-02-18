@@ -1,7 +1,8 @@
-import {Workflow, WorkflowFailedError, WorkflowStartOptions} from '@temporalio/client';
+import {Workflow, WorkflowStartOptions} from '@temporalio/client';
 import {Express, Request, Response} from 'express';
 import {Logger} from 'winston';
 import {camelize} from '../../utils/camelize';
+import {findLastError} from '../../utils/find-jobar-error-cause';
 import {formatId} from '../../utils/format-id';
 import {JobarError} from '../error';
 import {TaskQueue} from '../taskQueue';
@@ -13,6 +14,7 @@ export interface TaskOptions {
 	method?: 'get' | 'post' | 'put' | 'patch' | 'delete';
 	endpoint?: string;
 	prefixUrl?: string;
+	needWorkflowFullRequest?: boolean;
 }
 
 export interface TaskConfig {
@@ -20,6 +22,7 @@ export interface TaskConfig {
 	logger: Logger;
 	namespace: string;
 	temporalAddress: string;
+	defaultStatusCodeError: number;
 }
 
 export class Task {
@@ -61,6 +64,10 @@ export class Task {
 		return `Task ${this.name}`;
 	}
 
+	get needWorkflowFullRequest() {
+		return this.options.needWorkflowFullRequest ?? false;
+	}
+
 	setTaskQueue(taskQueue: TaskQueue) {
 		if (taskQueue.hasTask(this)) {
 			this.taskQueue = taskQueue;
@@ -77,7 +84,7 @@ export class Task {
 
 	/* istanbul ignore next */
 	async run(config: TaskConfig) {
-		const {app, logger} = config;
+		const {app, logger, defaultStatusCodeError} = config;
 		if (!this.isExposed) {
 			throw new Error('❌ Set isExposed to true in the options of this task to enable route creation');
 		}
@@ -96,7 +103,7 @@ export class Task {
 				const client = await this.taskQueue.createNewClient(config);
 				const handle = await client.workflow.start(this.workflowFunction, {
 					...workflowStartOptions,
-					args: [req.body, req.headers],
+					args: this.needWorkflowFullRequest ? [req, res] : [req.body, req.headers],
 					taskQueue: this.taskQueue.name,
 					workflowId,
 				});
@@ -105,20 +112,18 @@ export class Task {
 				logger.debug(`✅ WORKFLOW ${workflowId} ended`);
 				res.json(response);
 			} catch (workflowError: unknown) {
-				const typedError = workflowError as WorkflowFailedError;
-				const error = typedError.cause;
-				const defaultCause = new JobarError('Internal Server Error');
-				const cause = (error?.cause ?? defaultCause) as JobarError;
-				const message = JSON.parse(cause.message);
-				const defaultMessage = JSON.parse(defaultCause.message);
-				if (!message.isJobarError) {
+				const error = findLastError(workflowError);
+				const defaultError = new JobarError('No Message Available');
+				const parsedMessage = JSON.parse(error.message);
+				if (!parsedMessage.isJobarError) {
 					logger.warn('⚠️ Prefer to use JobarError in your activities');
 				}
-				logger.error(`❌ WORKFLOW ${workflowId} failed : ${message?.message ?? defaultMessage.message}`);
-				res.status(message.status).json({
-					message: message?.message ?? defaultMessage.message,
-					details: message?.details ?? defaultMessage.details,
-					error: message?.error ?? defaultMessage.error,
+				const jobarError = error as JobarError;
+				logger.error(`❌ WORKFLOW ${workflowId} failed : ${jobarError?.message}`);
+				res.status(jobarError?.options?.statusCode ?? defaultStatusCodeError).json({
+					error: jobarError?.options?.error ?? defaultError.options.error,
+					message: jobarError?.message ?? defaultError.message,
+					details: jobarError?.options?.details ?? defaultError.options.details,
 				});
 			}
 		});

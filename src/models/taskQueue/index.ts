@@ -18,6 +18,7 @@ interface TaskQueueConfig {
 	app: Express;
 	connection: NativeConnection;
 	workerOptions?: WorkerOptions;
+	defaultStatusCodeError: number;
 }
 
 export class TaskQueue {
@@ -109,14 +110,14 @@ export class TaskQueue {
 
 	/* istanbul ignore next */
 	async run(config: TaskQueueConfig) {
-		const {app, logger, namespace, temporalAddress} = config;
+		const {app, logger, namespace, temporalAddress, defaultStatusCodeError} = config;
 		const worker = await this.createWorker(config);
 		logger.info(`🚩 ${this._name.toUpperCase()} installation`);
 		worker.run();
 		for (const task of this.tasks) {
 			logger.info(`🚀 ${task.name} is running`);
 			if (task.isExposed) {
-				task.run({app, logger, namespace, temporalAddress});
+				task.run({app, logger, namespace, temporalAddress, defaultStatusCodeError});
 			}
 		}
 	}

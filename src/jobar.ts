@@ -56,11 +56,8 @@ export class Jobar {
 		return this;
 	}
 
-	error(message: string, options: JobarErrorOptions = {}) {
-		return new JobarError(message, {
-			status: this.defaultStatusCodeError,
-			...options,
-		});
+	static error(message: string, options: JobarErrorOptions = {}) {
+		return new JobarError(message, options);
 	}
 
 	async run({activities}: JobarConfig) {
@@ -81,6 +78,7 @@ export class Jobar {
 					workflowsPath: this.workflowsPath,
 					activities,
 				},
+				defaultStatusCodeError: this.defaultStatusCodeError,
 			});
 		}
 	}

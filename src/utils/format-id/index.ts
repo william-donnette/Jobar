@@ -1,4 +1,4 @@
-export function formatId(input: string): string {
+export const formatId = (input: string): string => {
 	const result = input
 		.toLowerCase() // Met tout en minuscule
 		.replace(/[^a-z0-9\s-]/g, '') // Supprime tout sauf les lettres, les nombres et les espaces
@@ -8,4 +8,4 @@ export function formatId(input: string): string {
 		return result;
 	}
 	throw new Error("This input can't be used as an ID");
-}
+};

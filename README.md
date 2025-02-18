@@ -79,7 +79,7 @@ import {JobarError} from 'jobar';
 export async function hardcodedPasswordLogin(username: string, password: string): Promise<string> {
 	if (password !== 'temporal') {
 		throw Jobar.error('Bad Credentials', {
-			status: 401,
+			statusCode: 401,
 			error: 'Unauthorized',
 			details: {
 				password: 'Invalid',
@@ -97,14 +97,15 @@ A **Task** represents a unit of work associated with a Temporal workflow. It can
 
 #### Available Options:
 
-| Option                 | Type                                      | Description                                                                                                                  |
-| ---------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `workflowStartOptions` | `WorkflowStartOptions`                    | Workflow startup options [See related doc](https://docs.temporal.io/develop/typescript/core-application#workflow-parameters) |
-| `setWorkflowId`        | `(req: Request) => string`                | Function to define a unique workflow identifier based on the request                                                         |
-| `isExposed`            | `boolean`                                 | Indicates if the task should be exposed via an Express API                                                                   |
-| `method`               | `'get', 'post', 'put', 'patch', 'delete'` | HTTP method of the endpoint `Required if isExposed is true`                                                                  |
-| `endpoint`             | `string`                                  | Endpoint URL `Required if isExposed is true`                                                                                 |
-| `prefixUrl`            | `string`                                  | Endpoint URL prefix `Default: /tasks`                                                                                        |
+| Option                    | Type                                      | Description                                                                                                                  |
+| ------------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `workflowStartOptions`    | `WorkflowStartOptions`                    | Workflow startup options [See related doc](https://docs.temporal.io/develop/typescript/core-application#workflow-parameters) |
+| `setWorkflowId`           | `(req: Request) => string`                | Function to define a unique workflow identifier based on the request                                                         |
+| `isExposed`               | `boolean`                                 | Indicates if the task should be exposed via an Express API                                                                   |
+| `method`                  | `'get', 'post', 'put', 'patch', 'delete'` | HTTP method of the endpoint `Required if isExposed is true`                                                                  |
+| `endpoint`                | `string`                                  | Endpoint URL `Required if isExposed is true`                                                                                 |
+| `prefixUrl`               | `string`                                  | Endpoint URL prefix `Default: /tasks`                                                                                        |
+| `needWorkflowFullRequest` | `boolean`                                 | Give to the workflow the express Request and Response in arguments instead of Body and Headers `Default: /false`             |
 
 #### Usage Example:
 

@@ -24,8 +24,8 @@ describe('hardcodedPasswordLogin activity', async () => {
 			const activityResponse = JSON.parse(error.message);
 			assert(error instanceof JobarError);
 			assert.equal(activityResponse.message, 'Unauthorized');
-			assert.equal(activityResponse.statusCode, 401);
-			assert.equal(activityResponse.errorCode, 'unauthorized');
+			assert.equal(activityResponse.options.statusCode, 401);
+			assert.equal(activityResponse.options.error, 'unauthorized');
 		}
 	});
 });

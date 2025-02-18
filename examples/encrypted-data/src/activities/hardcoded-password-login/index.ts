@@ -3,7 +3,7 @@ import Jobar from 'jobar';
 export async function hardcodedPasswordLogin(username: string, password: string): Promise<string> {
 	if (password !== 'temporal') {
 		throw Jobar.error('Bad Credentials', {
-			status: 401,
+			statusCode: 401,
 			error: 'Unauthorized',
 			details: {
 				password: 'Invalid',

@@ -25,7 +25,7 @@ describe('hardcodedPasswordLogin activity', async () => {
 			assert(error instanceof JobarError);
 			assert.equal(activityResponse.message, 'Bad Credentials');
 			assert.equal(activityResponse.options.statusCode, 401);
-			assert.equal(activityResponse.options.error, 'nauthorized');
+			assert.equal(activityResponse.options.error, 'Unauthorized');
 		}
 	});
 });

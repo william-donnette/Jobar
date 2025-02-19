@@ -8,7 +8,8 @@
 		"dev": "nodemon src/index.ts",
 		"build": "tsc --build",
 		"start": "node dist/src/index.js",
-		"link": "cd ../../ && npm run build && npm link && cd examples/hello-world/ && npm link jobar"
+		"link": "cd ../../ && npm run build && npm link && cd examples/hello-world/ && npm link jobar",
+		"open-report": "node -e \"const os = require('os'); const path = 'coverage/lcov-report/index.html'; if (os.platform() === 'darwin') { require('child_process').execSync('open ' + path); } else if (os.platform() === 'win32') { require('child_process').execSync('start ' + path); } else { require('child_process').execSync('xdg-open ' + path); }\""
 	},
 	"author": "William Donnette",
 	"license": "MIT",

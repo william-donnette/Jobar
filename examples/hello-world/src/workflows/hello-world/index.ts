@@ -1,6 +1,6 @@
+import activities from '@activities';
 import {proxyActivities} from '@temporalio/workflow';
 import {Request} from 'express';
-import activities from '../../activities';
 
 const {sayHello} = proxyActivities<typeof activities>({
 	startToCloseTimeout: '1 minute',

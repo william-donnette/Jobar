@@ -1,10 +1,9 @@
+import {TaskQueue} from '@models/taskQueue';
 import {NativeConnection, WorkerOptions} from '@temporalio/worker';
-import {Express} from 'express';
+import {WorkflowError} from '@temporalio/workflow';
+import {getDefaultLogger} from '@utils/logger';
+import {Express, Request, Response} from 'express';
 import {Logger} from 'winston';
-import {JobarError, JobarErrorOptions} from './models/error';
-import {TaskQueue} from './models/taskQueue';
-import {RequestErrorFunction, onRequestErrorDefault} from './utils';
-import {getDefaultLogger} from './utils/logger';
 
 interface JobarOptions {
 	app: Express;
@@ -13,14 +12,18 @@ interface JobarOptions {
 	logger?: Logger;
 	logLevel?: string;
 	namespace?: string;
-	defaultStatusCodeError?: number;
-	onRequestError?: RequestErrorFunction;
-}
-
-interface JobarConfig {
+	onRequestError: (context: JobarRequestContextError) => Promise<any> | any | void;
 	activities: WorkerOptions['activities'];
 }
 
+export interface JobarRequestContextError {
+	workflowId: string;
+	workflowError: WorkflowError;
+	initialError: Error;
+	request: Request;
+	response: Response;
+	jobarInstance: Jobar;
+}
 export class Jobar {
 	private readonly tasksQueues: Array<TaskQueue> = [];
 	app: Express;
@@ -30,63 +33,39 @@ export class Jobar {
 	logger: Logger;
 	logLevel: string;
 	namespace: string;
-	defaultStatusCodeError: number;
-	onRequestError: RequestErrorFunction;
+	onRequestError: (context: JobarRequestContextError) => Promise<any> | any | void;
+	connection?: NativeConnection;
 
-	constructor({
-		app,
-		workflowsPath,
-		temporalAddress,
-		logger,
-		logLevel = 'debug',
-		namespace = 'default',
-		defaultStatusCodeError = 500,
-		onRequestError,
-	}: JobarOptions) {
+	constructor({app, workflowsPath, temporalAddress, logger, logLevel = 'debug', namespace = 'default', onRequestError, activities}: JobarOptions) {
 		this.app = app;
 		this.temporalAddress = temporalAddress;
 		this.workflowsPath = workflowsPath;
-		this.logLevel = logLevel;
+		this.logLevel = logger?.level ?? logLevel;
 		this.namespace = namespace;
 		this.logger = logger ?? getDefaultLogger(this.logLevel);
-		this.defaultStatusCodeError = defaultStatusCodeError;
-		this.onRequestError = onRequestError ?? onRequestErrorDefault;
+		this.onRequestError = onRequestError;
+		this.activities = activities;
 	}
 
-	addTaskQueue(taskQueue: TaskQueue) {
-		if (this.tasksQueues.map((taskQueue) => taskQueue.name).includes(taskQueue.name)) {
-			throw new Error('❌ A TaskQueue with same name already exist.');
-		}
-		this.tasksQueues.push(taskQueue);
+	addTaskQueue(...taskQueues: Array<TaskQueue>) {
+		taskQueues.forEach((taskQueue) => {
+			if (this.tasksQueues.map((taskQueue) => taskQueue.name).includes(taskQueue.name)) {
+				throw new Error(`❌ A TaskQueue with same name as "${taskQueue.name}" already exist in this instance.`);
+			}
+			this.tasksQueues.push(taskQueue);
+		});
 		return this;
 	}
 
-	static error(message: string, options: JobarErrorOptions = {}) {
-		return new JobarError(message, options);
-	}
-
 	/* istanbul ignore next */
-	async run({activities}: JobarConfig) {
+	async run() {
 		this.logger.info(`🚀 Try to connect to temporal on ${this.temporalAddress}..`);
-		const connection = await NativeConnection.connect({
+		this.connection = await NativeConnection.connect({
 			address: this.temporalAddress,
 		});
 		this.logger.info(`✅ Connected to temporal`);
 		for (const taskQueue of this.tasksQueues) {
-			taskQueue.run({
-				app: this.app,
-				connection,
-				logger: this.logger,
-				namespace: this.namespace,
-				temporalAddress: this.temporalAddress,
-				workerOptions: {
-					taskQueue: taskQueue.name,
-					workflowsPath: this.workflowsPath,
-					activities,
-				},
-				defaultStatusCodeError: this.defaultStatusCodeError,
-				onRequestError: this.onRequestError,
-			});
+			taskQueue.run(this);
 		}
 	}
 }

@@ -1,6 +1,6 @@
+import {Task} from '@models/task';
 import assert from 'assert';
 import {TaskQueue} from '.';
-import {Task} from '../task';
 
 describe('TaskQueue', () => {
 	let taskQueue: TaskQueue;
@@ -60,7 +60,7 @@ describe('TaskQueue', () => {
 		it("should return the infos of it's exposedTasks", async () => {
 			taskQueue.addTask(task);
 			assert.equal(taskQueue.infos.length, 1);
-			assert.equal(taskQueue.infos[0], 'Task mockWorkflow is exposed on GET /tasks/mockWorkflow');
+			assert.equal(taskQueue.infos[0], 'Task mockWorkflow is exposed on GET /mockWorkflow');
 		});
 	});
 });

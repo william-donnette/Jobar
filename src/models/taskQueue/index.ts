@@ -1,26 +1,13 @@
+import {Task} from '@models/task';
+import {Jobar} from '@src/jobar';
 import {Client, ClientOptions, Connection, ConnectionOptions, DataConverter} from '@temporalio/client';
-import {NativeConnection, Worker, WorkerOptions} from '@temporalio/worker';
-import {Express} from 'express';
-import {Logger} from 'winston';
-import {RequestErrorFunction} from '../../utils';
-import {camelize} from '../../utils/camelize';
-import {Task, TaskConfig} from '../task';
+import {Worker} from '@temporalio/worker';
+import {camelize} from '@utils/camelize';
 
 export interface TaskQueueOptions {
 	getDataConverter?: () => Promise<DataConverter>;
 	connectionOptions?: ConnectionOptions;
 	clientOptions?: ClientOptions;
-}
-
-interface TaskQueueConfig {
-	temporalAddress: string;
-	namespace: string;
-	logger: Logger;
-	app: Express;
-	connection: NativeConnection;
-	workerOptions?: WorkerOptions;
-	defaultStatusCodeError: number;
-	onRequestError: RequestErrorFunction;
 }
 
 export class TaskQueue {
@@ -65,8 +52,8 @@ export class TaskQueue {
 	}
 
 	/* istanbul ignore next */
-	async createNewConnection(config: TaskConfig) {
-		const {temporalAddress, logger} = config;
+	async createNewConnection(jobarInstance: Jobar) {
+		const {temporalAddress, logger} = jobarInstance;
 		const {connectionOptions} = this.options;
 		logger.debug(`New connection on ${connectionOptions?.address ?? temporalAddress}`);
 		return await Connection.connect({
@@ -76,10 +63,10 @@ export class TaskQueue {
 	}
 
 	/* istanbul ignore next */
-	async createNewClient(config: TaskConfig) {
-		const {namespace, logger} = config;
+	async createNewClient(jobarInstance: Jobar) {
+		const {namespace, logger} = jobarInstance;
 		const {clientOptions} = this.options;
-		const connection = await this.createNewConnection(config);
+		const connection = await this.createNewConnection(jobarInstance);
 		const dataConverter = await this.getDataConverter();
 		const isCrypted = !!dataConverter;
 		logger.debug(`${isCrypted ? '🔐 New crypted' : 'New'} client on ${clientOptions?.namespace ?? namespace}`);
@@ -92,27 +79,28 @@ export class TaskQueue {
 	}
 
 	/* istanbul ignore next */
-	async createWorker(config: TaskQueueConfig) {
-		const {connection, workerOptions, namespace} = config;
+	async createWorker(jobarInstance: Jobar) {
+		const {activities, workflowsPath, namespace, connection} = jobarInstance;
 		return await Worker.create({
 			connection,
 			namespace: namespace,
 			taskQueue: this.name,
 			dataConverter: await this.getDataConverter(),
-			...workerOptions,
+			workflowsPath,
+			activities,
 		});
 	}
 
 	/* istanbul ignore next */
-	async run(config: TaskQueueConfig) {
-		const {app, logger, namespace, temporalAddress, defaultStatusCodeError, onRequestError} = config;
-		const worker = await this.createWorker(config);
+	async run(jobarInstance: Jobar) {
+		const {logger} = jobarInstance;
+		const worker = await this.createWorker(jobarInstance);
 		logger.info(`🚩 ${this._name.toUpperCase()} installation`);
 		worker.run();
 		for (const task of this.tasks) {
 			logger.info(`🚀 ${task.name} is running`);
 			if (task.isExposed) {
-				task.run({app, logger, namespace, temporalAddress, defaultStatusCodeError, onRequestError});
+				task.run(jobarInstance);
 			}
 		}
 	}

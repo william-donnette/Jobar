@@ -2,9 +2,9 @@ import {WorkflowFailedError} from '@temporalio/client';
 import {MockActivityEnvironment, TestWorkflowEnvironment} from '@temporalio/testing';
 import {Worker} from '@temporalio/worker';
 import assert from 'assert';
-import {JobarError} from 'jobar';
 import {before, describe, it} from 'mocha';
 import {login} from '.';
+import { findInitialError } from 'jobar';
 
 describe('Login workflow with mocks', () => {
 	let testEnv: TestWorkflowEnvironment;
@@ -53,10 +53,7 @@ describe('Login workflow with mocks', () => {
 			workflowsPath: require.resolve('..'),
 			activities: {
 				hardcodedPasswordLogin: async () => {
-					throw new JobarError('Bad Credentials', {
-						statusCode: 401,
-						error: 'Unauthorized',
-					});
+					throw new Error('Bad Credentials');
 				},
 			},
 		});
@@ -71,16 +68,6 @@ describe('Login workflow with mocks', () => {
 			);
 		};
 
-		try {
-			const result = await env.run(workflowCall);
-		} catch (error: any) {
-			const activityError = error.cause;
-			const jobarError = activityError?.cause;
-			const activityResponse = JSON.parse(jobarError?.message ?? '');
-			assert(error instanceof WorkflowFailedError);
-			assert.equal(activityResponse.message, 'Bad Credentials');
-			assert.equal(activityResponse.options.statusCode, 401);
-			assert.equal(activityResponse.options.error, 'Unauthorized');
-		}
+		return await assert.rejects(async () => await env.run(workflowCall), (error) => error instanceof WorkflowFailedError && error.message === 'Workflow execution failed' && findInitialError(error).message === 'Bad Credentials')
 	}).timeout(20000); //20 sec
 });

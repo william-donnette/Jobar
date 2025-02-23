@@ -6,8 +6,18 @@
 		"moduleResolution": "Node16",
 		"declarationMap": true,
 		"sourceMap": true,
-		"rootDir": ".",
-		"outDir": "./dist"
+		"rootDir": "./src",
+		"outDir": "./dist",
+		"baseUrl": "./src",
+		"paths": {
+			"@src/*": ["./*"],
+			"@activities": ["./activities"],
+			"@activities/*": ["./activities/*"],
+			"@tasks": ["./tasks"],
+			"@tasks/*": ["./tasks/*"],
+			"@workflows": ["./workflows"],
+			"@workflows/*": ["./workflows/*"]
+		}
 	},
-	"include": ["src/**/*.ts"]
+	"include": ["./src/**/*.ts"]
 }

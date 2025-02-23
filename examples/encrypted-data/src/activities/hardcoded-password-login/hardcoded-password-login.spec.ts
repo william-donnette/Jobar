@@ -1,6 +1,5 @@
 import {MockActivityEnvironment} from '@temporalio/testing';
 import assert from 'assert';
-import {JobarError} from 'jobar';
 import {describe, it} from 'mocha';
 import {hardcodedPasswordLogin} from '.';
 
@@ -18,14 +17,9 @@ describe('hardcodedPasswordLogin activity', async () => {
 		const username = 'Temporal';
 		const password = 'bad password';
 
-		try {
-			const result = await env.run(hardcodedPasswordLogin, username, password);
-		} catch (error: any) {
-			const activityResponse = JSON.parse(error.message);
-			assert(error instanceof JobarError);
-			assert.equal(activityResponse.message, 'Bad Credentials');
-			assert.equal(activityResponse.options.statusCode, 401);
-			assert.equal(activityResponse.options.error, 'Unauthorized');
-		}
+		return await assert.rejects(
+			async () => await env.run(hardcodedPasswordLogin, username, password),
+			(error) => error instanceof Error && error.message === 'Bad Credentials'
+		);
 	});
 });

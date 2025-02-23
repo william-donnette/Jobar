@@ -5,7 +5,8 @@ import {Worker} from '@temporalio/worker';
 import assert from 'assert';
 import {before, describe, it} from 'mocha';
 import {login} from '.';
-import activities from '../../activities';
+import activities from '@activities';
+import { findInitialError } from 'jobar';
 
 describe('Login workflow', () => {
 	let testEnv: TestWorkflowEnvironment;
@@ -62,17 +63,7 @@ describe('Login workflow', () => {
 			);
 		};
 
-		try {
-			const result = await env.run(workflowCall);
-		} catch (error: any) {
-			const activityError = error.cause;
-			const jobarError = activityError?.cause;
-			const activityResponse = JSON.parse(jobarError?.message ?? '');
-			assert(error instanceof WorkflowFailedError);
-			assert.equal(activityResponse.message, 'Bad Credentials');
-			assert.equal(activityResponse.options.statusCode, 401);
-			assert.equal(activityResponse.options.error, 'Unauthorized');
-		}
+		return await assert.rejects(async () => await env.run(workflowCall), (error) => error instanceof WorkflowFailedError && error.message === 'Workflow execution failed' && findInitialError(error).message === 'Bad Credentials')
 	}).timeout(20000); //20 sec
 });
 // @@@SNIPEND

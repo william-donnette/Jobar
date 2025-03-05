@@ -8,14 +8,6 @@ import {HOSTNAME, PORT, TEMPORAL_ADDRESS} from './config';
 const app = express();
 app.use(express.json());
 
-const onRequestError = ({initialError, response, workflowId}) => {
-	response.status(500).json({
-		error: {
-			name: initialError.message,
-		},
-	});
-};
-
 const jobar: Jobar = new Jobar({
 	app,
 	workflowsPath: require.resolve('./workflows'),

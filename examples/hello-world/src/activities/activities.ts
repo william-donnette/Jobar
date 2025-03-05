@@ -1,1 +1,1 @@
-export * from './say-hello';
+export * from './say-hello/say-hello';

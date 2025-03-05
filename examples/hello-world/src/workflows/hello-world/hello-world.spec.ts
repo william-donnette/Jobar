@@ -1,41 +1,87 @@
-// @@@SNIPSTART hello-world-project-template-ts-workflow-test
-import activities from '@activities';
+import {Workflow, WorkflowStartOptions} from '@temporalio/client';
+import {WorkflowCoverage} from '@temporalio/nyc-test-coverage';
 import {TestWorkflowEnvironment} from '@temporalio/testing';
-import {Worker} from '@temporalio/worker';
+import {DefaultLogger, Runtime, Worker, WorkerOptions} from '@temporalio/worker';
+import {HelloWorld} from '@workflows';
 import assert from 'assert';
-import {before, describe, it} from 'mocha';
-import {HelloWorld} from '.';
+import {describe, it} from 'mocha';
+import sinon from 'sinon';
+import {v4 as uuid} from 'uuid';
 
-describe('HelloWorld workflow', () => {
-	let testEnv: TestWorkflowEnvironment;
+const workflowCoverage = new WorkflowCoverage();
+
+describe('Workflow login', async function () {
+	this.slow(10000);
+	this.timeout(20000);
+	const workflowFn = HelloWorld;
+	const workflowStartOptions: Partial<WorkflowStartOptions<typeof workflowFn>> = {
+		args: [
+			{
+				name: 'Temporal',
+			},
+		],
+	};
+	const sayHelloStub = sinon.stub();
+	const sayHelloSuccessResult = 'Hello, Temporal !';
+
+	let env: TestWorkflowEnvironment;
 
 	before(async () => {
-		testEnv = await TestWorkflowEnvironment.createLocal();
+		Runtime.install({logger: new DefaultLogger('WARN')});
+		env = await TestWorkflowEnvironment.createLocal();
+	});
+
+	beforeEach(() => {
+		sayHelloStub.resolves(sayHelloSuccessResult);
+	});
+
+	afterEach(() => {
+		sinon.reset();
 	});
 
 	after(async () => {
-		await testEnv?.teardown();
+		await env.teardown();
+		workflowCoverage.mergeIntoGlobalCoverage();
+		sinon.restore();
 	});
 
-	it('successfully completes the Workflow', async () => {
-		const {client, nativeConnection} = testEnv;
-		const taskQueue = 'test';
+	async function executeTestWithWorker<W extends Workflow = Workflow>(
+		env: TestWorkflowEnvironment,
+		workerOptions: Pick<WorkerOptions, 'activities'>,
+		workflowFn: W,
+		workflowStartOptions: Partial<WorkflowStartOptions<W>> = {},
+		workflowCoverage?: WorkflowCoverage
+	) {
+		const taskQueue = `test-taskqueue-${uuid()}`;
 
-		const worker = await Worker.create({
-			connection: nativeConnection,
+		const finalWorkerOptions = {
+			...workerOptions,
+			activities: {...workerOptions.activities},
+			connection: env.nativeConnection,
 			taskQueue,
 			workflowsPath: require.resolve('..'),
-			activities: activities,
-		});
+		};
 
-		const result = await worker.runUntil(
-			client.workflow.execute(HelloWorld, {
-				args: [{name: 'Temporal'}],
-				workflowId: 'test',
+		const worker = await Worker.create(workflowCoverage ? workflowCoverage.augmentWorkerOptions(finalWorkerOptions) : finalWorkerOptions);
+
+		return await worker.runUntil(async () =>
+			env.client.workflow.execute(workflowFn, {
 				taskQueue,
-			})
+				workflowId: `test-${uuid()}`,
+				...workflowStartOptions,
+			} as WorkflowStartOptions<W>)
 		);
-		assert.equal(result, 'Hello, Temporal !');
-	}).timeout(20000); // 20 sec
+	}
+
+	it('successfull execution', async () => {
+		const result = await executeTestWithWorker(
+			env,
+			{activities: {sayHello: sayHelloStub}},
+			workflowFn,
+			workflowStartOptions,
+			workflowCoverage
+		);
+
+		assert.deepStrictEqual(sayHelloSuccessResult, result);
+	});
 });
-// @@@SNIPEND

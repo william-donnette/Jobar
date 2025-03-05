@@ -5,14 +5,14 @@ import {getDefaultLogger} from '@utils/logger';
 import {Express, Request, Response} from 'express';
 import {Logger} from 'winston';
 
-interface JobarOptions {
+export interface JobarOptions {
 	app: Express;
 	workflowsPath: string;
 	temporalAddress: string;
 	logger?: Logger;
 	logLevel?: string;
 	namespace?: string;
-	onRequestError: (context: JobarRequestContextError) => Promise<any> | any | void;
+	onRequestError: (context: JobarRequestContextError) => any;
 	activities: WorkerOptions['activities'];
 }
 
@@ -33,7 +33,7 @@ export class Jobar {
 	logger: Logger;
 	logLevel: string;
 	namespace: string;
-	onRequestError: (context: JobarRequestContextError) => Promise<any> | any | void;
+	onRequestError: (context: JobarRequestContextError) => any;
 	connection?: NativeConnection;
 
 	constructor({app, workflowsPath, temporalAddress, logger, logLevel = 'debug', namespace = 'default', onRequestError, activities}: JobarOptions) {

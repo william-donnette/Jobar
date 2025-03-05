@@ -1,7 +1,7 @@
 import {MockActivityEnvironment} from '@temporalio/testing';
 import assert from 'assert';
 import {describe, it} from 'mocha';
-import {sayHello} from '.';
+import {sayHello} from './say-hello';
 
 describe('sayHello activity', async () => {
 	it('successfully sayHello', async () => {

@@ -10,14 +10,24 @@
 			"@workflows": ["workflows"],
 			"@workflows/*": ["workflows/*"],
 			"@tasks": ["tasks"],
-			"@tasks/*": ["tasks/*"],
+			"@tasks/*": ["tasks/*"]
 		},
 		"declaration": true,
 		"moduleResolution": "Node16",
 		"declarationMap": true,
 		"sourceMap": true,
 		"rootDir": "./src",
-		"outDir": "./dist"
+		"outDir": "./dist",
+		"baseUrl": "./src",
+		"paths": {
+			"@src/*": ["./*"],
+			"@activities": ["./activities"],
+			"@activities/*": ["./activities/*"],
+			"@tasks": ["./tasks"],
+			"@tasks/*": ["./tasks/*"],
+			"@workflows": ["./workflows"],
+			"@workflows/*": ["./workflows/*"]
+		}
 	},
-	"include": ["src/**/*.ts"]
+	"include": ["./src/**/*.ts"]
 }

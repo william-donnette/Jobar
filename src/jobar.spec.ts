@@ -14,13 +14,16 @@ describe('Jobar', () => {
 			app,
 			workflowsPath: './workflows',
 			temporalAddress: 'localhost:7233',
+			onRequestError: ({workflowError}) => {
+				throw workflowError;
+			},
+			activities: [],
 		});
 	});
 
 	it('should initialize with default values', () => {
 		assert.strictEqual(jobar.logLevel, 'debug');
 		assert.strictEqual(jobar.namespace, 'default');
-		assert.strictEqual(jobar.defaultStatusCodeError, 500);
 	});
 
 	it('should override default values when provided', () => {
@@ -31,13 +34,15 @@ describe('Jobar', () => {
 			temporalAddress: 'localhost:7233',
 			logLevel: 'info',
 			namespace: 'customNamespace',
-			defaultStatusCodeError: 400,
 			logger: customLogger,
+			onRequestError: ({workflowError}) => {
+				throw workflowError;
+			},
+			activities: [],
 		});
 
 		assert.strictEqual(jobar.logLevel, 'info');
 		assert.strictEqual(jobar.namespace, 'customNamespace');
-		assert.strictEqual(jobar.defaultStatusCodeError, 400);
 		assert.strictEqual(jobar.logger, customLogger);
 	});
 
@@ -52,20 +57,12 @@ describe('Jobar', () => {
 		const taskQueue1 = new TaskQueue('queue1');
 		const taskQueue2 = new TaskQueue('queue1');
 		jobar.addTaskQueue(taskQueue1);
-		assert.throws(() => jobar.addTaskQueue(taskQueue2), /A TaskQueue with same name already exist/);
+		assert.throws(() => jobar.addTaskQueue(taskQueue2), /A TaskQueue with same name as "queue1" already exist in this instance/);
 	});
 
-	it('should create a JobarError default instance', () => {
-		const error = Jobar.error('Test error');
-		const parsedMessage = JSON.parse(error.message);
-		assert.strictEqual(parsedMessage.message, 'Test error');
-		assert.strictEqual(parsedMessage.options.error, 'Internal Server Error');
-	});
-
-	it('should create a JobarError instance', () => {
-		const error = Jobar.error('Test error', {error: 'E_TEST'});
-		const parsedMessage = JSON.parse(error.message);
-		assert.strictEqual(parsedMessage.message, 'Test error');
-		assert.strictEqual(parsedMessage.options.error, 'E_TEST');
+	it('should throw an error when adding a task queue with a duplicate name 2', () => {
+		const taskQueue1 = new TaskQueue('queue1');
+		const taskQueue2 = new TaskQueue('queue1');
+		assert.throws(() => jobar.addTaskQueue(taskQueue1, taskQueue2), /A TaskQueue with same name as "queue1" already exist in this instance/);
 	});
 });

@@ -1,10 +1,10 @@
 // @@@SNIPSTART hello-world-project-template-ts-workflow-test
+import activities from '@activities';
 import {TestWorkflowEnvironment} from '@temporalio/testing';
 import {Worker} from '@temporalio/worker';
 import assert from 'assert';
 import {before, describe, it} from 'mocha';
 import {HelloWorld} from '.';
-import activities from '../../activities';
 
 describe('HelloWorld workflow', () => {
 	let testEnv: TestWorkflowEnvironment;

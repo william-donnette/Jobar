@@ -6,9 +6,9 @@
 	"scripts": {
 		"test": "nyc mocha --exit --r ts-node/register --r source-map-support/register -r tsconfig-paths/register ./src/**/*.spec.ts",
 		"dev": "nodemon -r tsconfig-paths/register src/index.ts",
-		"build": "rm -rf ./dist && tsc --build && tsc-alias",
+		"build": "rm -r ./dist && tsc --build && tsc-alias",
 		"start": "node ./dist/index.js",
-		"link": "cd ../../ && npm run build && npm link && cd examples/encrypted-data/ && npm link jobar",
+		"link": "cd ../../ && npm run build && npm link && cd ./examples/encrypted-data/ && npm link jobar",
 		"open-report": "node -e \"const os = require('os'); const path = './coverage/lcov-report/index.html'; if (os.platform() === 'darwin') { require('child_process').execSync('open ' + path); } else if (os.platform() === 'win32') { require('child_process').execSync('start ' + path); } else { require('child_process').execSync('xdg-open ' + path); }\""
 	},
 	"author": "William Donnette",
@@ -34,6 +34,6 @@
 	"dependencies": {
 		"dotenv": "^16.4.7",
 		"express": "^4.21.2",
-		"jobar": "^1.3.0"
+		"jobar": "^1.3.1"
 	}
 }

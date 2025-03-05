@@ -1,11 +1,11 @@
+import {TaskQueue} from '@models/taskQueue';
+import {Jobar} from '@src/jobar';
+import {findInitialError} from '@src/utils';
 import {Workflow, WorkflowStartOptions} from '@temporalio/client';
 import {WorkflowError} from '@temporalio/workflow';
-import {Express, Request, Response} from 'express';
-import {Logger} from 'winston';
-import {RequestErrorFunction} from '../../utils';
-import {camelize} from '../../utils/camelize';
-import {formatId} from '../../utils/format-id';
-import {TaskQueue} from '../taskQueue';
+import {camelize} from '@utils/camelize';
+import {formatId} from '@utils/format-id';
+import {Request, Response} from 'express';
 
 export interface TaskOptions {
 	workflowStartOptions?: WorkflowStartOptions;
@@ -15,15 +15,6 @@ export interface TaskOptions {
 	endpoint?: string;
 	prefixUrl?: string;
 	needWorkflowFullRequest?: boolean;
-}
-
-export interface TaskConfig {
-	app: Express;
-	logger: Logger;
-	namespace: string;
-	temporalAddress: string;
-	defaultStatusCodeError: number;
-	onRequestError: RequestErrorFunction;
 }
 
 export class Task {
@@ -36,8 +27,9 @@ export class Task {
 	}
 
 	get url() {
-		const {prefixUrl, endpoint} = this.options;
-		return `/${prefixUrl ?? 'tasks'}/${endpoint ?? this.name}`;
+		const {endpoint} = this.options;
+		const url = endpoint ?? this.name;
+		return `/${url.split('/').filter(Boolean).join('/')}`;
 	}
 
 	get method() {
@@ -84,8 +76,8 @@ export class Task {
 	}
 
 	/* istanbul ignore next */
-	async run(config: TaskConfig) {
-		const {app, logger, onRequestError} = config;
+	async run(jobarInstance: Jobar) {
+		const {app, logger, onRequestError} = jobarInstance;
 		if (!this.isExposed) {
 			throw new Error('❌ Set isExposed to true in the options of this task to enable route creation');
 		}
@@ -101,7 +93,7 @@ export class Task {
 			const {workflowStartOptions} = this.options ?? {};
 			const workflowId = this.getWorkflowId(request);
 			try {
-				const client = await this.taskQueue.createNewClient(config);
+				const client = await this.taskQueue.createNewClient(jobarInstance);
 				const handle = await client.workflow.start(this.workflowFunction, {
 					...workflowStartOptions,
 					args: this.needWorkflowFullRequest ? [request, response] : [request.body, request.headers],
@@ -111,10 +103,20 @@ export class Task {
 				logger.debug(`⌛ WORKFLOW ${workflowId} requested`);
 				const result = await handle.result();
 				logger.debug(`✅ WORKFLOW ${workflowId} ended`);
-				response.json(result);
+				if (!response.headersSent) {
+					response.status(200).json(result ?? null);
+				}
+				return result;
 			} catch (workflowError: unknown) {
 				logger.error(`❌ WORKFLOW ${workflowId} failed`);
-				onRequestError(workflowId, {workflowError: workflowError as WorkflowError, request, response, taskConfig: config});
+				return await onRequestError({
+					workflowId,
+					workflowError: workflowError as WorkflowError,
+					initialError: findInitialError(workflowError),
+					request,
+					response,
+					jobarInstance,
+				});
 			}
 		});
 	}

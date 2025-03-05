@@ -1,6 +1,6 @@
+import {HelloWorld} from '@workflows';
 import {Request} from 'express';
 import {Task, TaskQueue} from 'jobar';
-import {HelloWorld} from '../workflows';
 
 // Create your task from your workflow
 const exampleTask = new Task(HelloWorld, {
@@ -9,7 +9,7 @@ const exampleTask = new Task(HelloWorld, {
 	},
 	isExposed: true,
 	method: 'post',
-	endpoint: 'helloWorld',
+	endpoint: '/tasks/helloWorld',
 });
 
 // Add the task in a queue, add all the task you want on the queue

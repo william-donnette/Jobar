@@ -1,9 +1,9 @@
+import activities from '@activities';
+import exampleTaskQueue from '@tasks/example';
 import 'dotenv/config';
 import express from 'express';
 import Jobar from 'jobar';
-import activities from './activities';
 import {HOSTNAME, PORT, TEMPORAL_ADDRESS} from './config';
-import exampleTaskQueue from './tasks/example';
 
 const app = express();
 app.use(express.json());
@@ -11,17 +11,31 @@ app.use(express.json());
 const onRequestError = ({initialError, response, workflowId}) => {
 	response.status(500).json({
 		error: {
-			name: initialError.message
-		}
-	})
-}
+			name: initialError.message,
+		},
+	});
+};
 
 const jobar: Jobar = new Jobar({
 	app,
 	workflowsPath: require.resolve('./workflows'),
 	temporalAddress: TEMPORAL_ADDRESS,
-	onRequestError: onRequestError,
-	activities
+	activities,
+	onRequestError: ({workflowId, initialError, response}) => {
+		console.log(`❌ Workflow ${workflowId} failed !`);
+		// Here you can manage your errors
+		if (initialError.message === 'Bad Credentials') {
+			response.status(403).json({
+				error: 'Unauthorized',
+				description: 'Bad Credentials',
+			});
+		} else {
+			response.status(500).json({
+				error: 'Internal Server Error',
+				description: initialError.message,
+			});
+		}
+	},
 });
 
 jobar.addTaskQueue(exampleTaskQueue).run();

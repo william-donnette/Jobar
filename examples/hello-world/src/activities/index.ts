@@ -1,7 +1,3 @@
-import {sayHello} from './say-hello';
-
-const activities = {
-	sayHello,
-};
+import * as activities from './activities';
 
 export default activities;

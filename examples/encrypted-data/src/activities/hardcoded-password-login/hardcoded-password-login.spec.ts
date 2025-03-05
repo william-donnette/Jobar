@@ -17,9 +17,6 @@ describe('hardcodedPasswordLogin activity', async () => {
 		const username = 'Temporal';
 		const password = 'bad password';
 
-		await assert.rejects(
-			env.run(hardcodedPasswordLogin, username, password),
-			(error: any) => error.message === 'Unauthorized'
-		);
+		await assert.rejects(env.run(hardcodedPasswordLogin, username, password), (error: any) => error.message === 'Unauthorized');
 	});
 });

@@ -1,6 +1,6 @@
+import {TaskQueue} from '@models/taskQueue';
 import assert from 'assert';
 import {Task} from '.';
-import {TaskQueue} from '../taskQueue';
 
 describe('Task', () => {
 	const mockWorkflow = async () => 'workflow result'; // Simuler une fonction de workflow
@@ -12,7 +12,7 @@ describe('Task', () => {
 		task = new Task(mockWorkflow, {
 			isExposed: true,
 			method: 'post',
-			endpoint: 'mockWorkflow',
+			endpoint: '/tasks/mockWorkflow',
 		});
 		taskQueue.addTask(task);
 	});

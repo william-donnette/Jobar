@@ -1,12 +1,11 @@
-import {ActivityFailure, ApplicationFailure, WorkflowFailedError, Workflow, WorkflowStartOptions} from '@temporalio/client';
+import {ActivityFailure, ApplicationFailure, Workflow, WorkflowFailedError, WorkflowStartOptions} from '@temporalio/client';
 import {WorkflowCoverage} from '@temporalio/nyc-test-coverage';
 import {TestWorkflowEnvironment} from '@temporalio/testing';
-import {DefaultLogger, Runtime} from '@temporalio/worker';
+import {DefaultLogger, Runtime, Worker, WorkerOptions} from '@temporalio/worker';
 import {login} from '@workflows';
 import assert from 'assert';
 import {describe, it} from 'mocha';
 import sinon from 'sinon';
-import {Worker, WorkerOptions} from '@temporalio/worker';
 import {v4 as uuid} from 'uuid';
 
 const workflowCoverage = new WorkflowCoverage();
@@ -55,7 +54,7 @@ describe('Workflow login', async function () {
 		workflowCoverage?: WorkflowCoverage
 	) {
 		const taskQueue = `test-taskqueue-${uuid()}`;
-	
+
 		const finalWorkerOptions = {
 			...workerOptions,
 			activities: {...workerOptions.activities},
@@ -63,9 +62,9 @@ describe('Workflow login', async function () {
 			taskQueue,
 			workflowsPath: require.resolve('..'),
 		};
-	
+
 		const worker = await Worker.create(workflowCoverage ? workflowCoverage.augmentWorkerOptions(finalWorkerOptions) : finalWorkerOptions);
-	
+
 		return await worker.runUntil(async () =>
 			env.client.workflow.execute(workflowFn, {
 				taskQueue,
@@ -88,11 +87,17 @@ describe('Workflow login', async function () {
 	});
 
 	it('with loginToKeycloak fail', async () => {
-		const errorMessage = 'Unauthorized'
+		const errorMessage = 'Unauthorized';
 		hardcodedPasswordLoginStub.rejects(new Error(errorMessage));
 
 		await assert.rejects(
-			executeTestWithWorker(env, {activities: {hardcodedPasswordLogin: hardcodedPasswordLoginStub}}, workflowFn, workflowStartOptions, workflowCoverage),
+			executeTestWithWorker(
+				env,
+				{activities: {hardcodedPasswordLogin: hardcodedPasswordLoginStub}},
+				workflowFn,
+				workflowStartOptions,
+				workflowCoverage
+			),
 			(err: unknown) =>
 				err instanceof WorkflowFailedError &&
 				err.cause instanceof ActivityFailure &&

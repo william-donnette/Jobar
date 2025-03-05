@@ -44,7 +44,7 @@ export class Task {
 		if (this.isExposed && this.options?.method) {
 			return this.options.method;
 		}
-		return;
+		return undefined;
 	}
 
 	get isExposed() {

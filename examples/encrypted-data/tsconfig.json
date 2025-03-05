@@ -2,11 +2,21 @@
 	"extends": "@tsconfig/node16/tsconfig.json",
 	"version": "4.4.2",
 	"compilerOptions": {
+		"baseUrl": "./src",
+		"paths": {
+			"@src/*": ["*"],
+			"@activities": ["activities"],
+			"@activities/*": ["activities/*"],
+			"@workflows": ["workflows"],
+			"@workflows/*": ["workflows/*"],
+			"@tasks": ["tasks"],
+			"@tasks/*": ["tasks/*"],
+		},
 		"declaration": true,
 		"moduleResolution": "Node16",
 		"declarationMap": true,
 		"sourceMap": true,
-		"rootDir": ".",
+		"rootDir": "./src",
 		"outDir": "./dist"
 	},
 	"include": ["src/**/*.ts"]

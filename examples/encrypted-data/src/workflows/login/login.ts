@@ -1,5 +1,5 @@
 import {proxyActivities} from '@temporalio/workflow';
-import activities from '../../activities';
+import activities from '@activities';
 
 const {hardcodedPasswordLogin} = proxyActivities<typeof activities>({
 	startToCloseTimeout: '1 minute',

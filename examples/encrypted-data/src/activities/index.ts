@@ -1,7 +1,3 @@
-import {hardcodedPasswordLogin} from './hardcoded-password-login';
-
-const activities = {
-	hardcodedPasswordLogin,
-};
+import * as activities from './activities';
 
 export default activities;

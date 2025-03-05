@@ -8,12 +8,22 @@ import exampleTaskQueue from './tasks/example';
 const app = express();
 app.use(express.json());
 
+const onRequestError = ({initialError, response, workflowId}) => {
+	response.status(500).json({
+		error: {
+			name: initialError.message
+		}
+	})
+}
+
 const jobar: Jobar = new Jobar({
 	app,
 	workflowsPath: require.resolve('./workflows'),
 	temporalAddress: TEMPORAL_ADDRESS,
+	onRequestError: onRequestError,
+	activities
 });
 
-jobar.addTaskQueue(exampleTaskQueue).run({activities});
+jobar.addTaskQueue(exampleTaskQueue).run();
 
 app.listen(PORT, HOSTNAME, () => console.log(`Server is running on ${HOSTNAME}:${PORT}`));

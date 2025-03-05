@@ -1,78 +1,103 @@
-// @@@SNIPSTART hello-world-project-template-ts-workflow-test
-import {WorkflowFailedError} from '@temporalio/client';
-import {MockActivityEnvironment, TestWorkflowEnvironment} from '@temporalio/testing';
-import {Worker} from '@temporalio/worker';
+import {ActivityFailure, ApplicationFailure, WorkflowFailedError, Workflow, WorkflowStartOptions} from '@temporalio/client';
+import {WorkflowCoverage} from '@temporalio/nyc-test-coverage';
+import {TestWorkflowEnvironment} from '@temporalio/testing';
+import {DefaultLogger, Runtime} from '@temporalio/worker';
+import {login} from '@workflows';
 import assert from 'assert';
-import {before, describe, it} from 'mocha';
-import {login} from '.';
-import activities from '../../activities';
+import {describe, it} from 'mocha';
+import sinon from 'sinon';
+import {Worker, WorkerOptions} from '@temporalio/worker';
+import {v4 as uuid} from 'uuid';
 
-describe('Login workflow', () => {
-	let testEnv: TestWorkflowEnvironment;
+const workflowCoverage = new WorkflowCoverage();
+
+describe('Workflow login', async function () {
+	this.slow(10000);
+	this.timeout(20000);
+	const workflowFn = login;
+	const workflowStartOptions: Partial<WorkflowStartOptions<typeof workflowFn>> = {
+		args: [
+			{
+				username: 'Temporal',
+				password: 'temporal',
+			},
+		],
+	};
+	const hardcodedPasswordLoginStub = sinon.stub();
+	const hardcodedPasswordLoginSuccessResult = 'Hello, Temporal !';
+
+	let env: TestWorkflowEnvironment;
 
 	before(async () => {
-		testEnv = await TestWorkflowEnvironment.createLocal();
+		Runtime.install({logger: new DefaultLogger('WARN')});
+		env = await TestWorkflowEnvironment.createLocal();
+	});
+
+	beforeEach(() => {
+		hardcodedPasswordLoginStub.resolves(hardcodedPasswordLoginSuccessResult);
+	});
+
+	afterEach(() => {
+		sinon.reset();
 	});
 
 	after(async () => {
-		await testEnv?.teardown();
+		await env.teardown();
+		workflowCoverage.mergeIntoGlobalCoverage();
+		sinon.restore();
 	});
 
-	it('successfully completes the Workflow', async () => {
-		const {client, nativeConnection} = testEnv;
-		const taskQueue = 'test';
-
-		const worker = await Worker.create({
-			connection: nativeConnection,
+	async function executeTestWithWorker<W extends Workflow = Workflow>(
+		env: TestWorkflowEnvironment,
+		workerOptions: Pick<WorkerOptions, 'activities'>,
+		workflowFn: W,
+		workflowStartOptions: Partial<WorkflowStartOptions<W>> = {},
+		workflowCoverage?: WorkflowCoverage
+	) {
+		const taskQueue = `test-taskqueue-${uuid()}`;
+	
+		const finalWorkerOptions = {
+			...workerOptions,
+			activities: {...workerOptions.activities},
+			connection: env.nativeConnection,
 			taskQueue,
 			workflowsPath: require.resolve('..'),
-			activities: activities,
-		});
-
-		const result = await worker.runUntil(
-			client.workflow.execute(login, {
-				args: [{username: 'Temporal', password: 'temporal'}],
-				workflowId: 'test',
-				taskQueue,
-			})
-		);
-		assert.equal(result, 'Hello, Temporal !');
-	}).timeout(20000); // 20 sec
-
-	it('fail the Workflow', async () => {
-		const env = new MockActivityEnvironment();
-		const {client, nativeConnection} = testEnv;
-		const taskQueue = 'test';
-		const error = 'Invalid Request';
-
-		const worker = await Worker.create({
-			connection: nativeConnection,
-			taskQueue,
-			workflowsPath: require.resolve('..'),
-			activities,
-		});
-
-		const workflowCall = () => {
-			return worker.runUntil(
-				client.workflow.execute(login, {
-					args: [{username: 'Temporal', password: 'bad password'}],
-					workflowId: 'test',
-					taskQueue,
-				})
-			);
 		};
+	
+		const worker = await Worker.create(workflowCoverage ? workflowCoverage.augmentWorkerOptions(finalWorkerOptions) : finalWorkerOptions);
+	
+		return await worker.runUntil(async () =>
+			env.client.workflow.execute(workflowFn, {
+				taskQueue,
+				workflowId: `test-${uuid()}`,
+				...workflowStartOptions,
+			} as WorkflowStartOptions<W>)
+		);
+	}
 
-		try {
-			const result = await env.run(workflowCall);
-		} catch (error: any) {
-			const activityError = error.cause;
-			const jobarError = activityError?.cause;
-			const activityResponse = JSON.parse(jobarError?.message ?? '');
-			assert(error instanceof WorkflowFailedError);
-			assert.equal(activityResponse.message, 'Bad Credentials');
-			assert.equal(activityResponse.options.statusCode, 401);
-			assert.equal(activityResponse.options.error, 'Unauthorized');
-		}
-	}).timeout(20000); //20 sec
+	it('successfull execution', async () => {
+		const result = await executeTestWithWorker(
+			env,
+			{activities: {hardcodedPasswordLogin: hardcodedPasswordLoginStub}},
+			workflowFn,
+			workflowStartOptions,
+			workflowCoverage
+		);
+
+		assert.deepStrictEqual(hardcodedPasswordLoginSuccessResult, result);
+	});
+
+	it('with loginToKeycloak fail', async () => {
+		const errorMessage = 'Unauthorized'
+		hardcodedPasswordLoginStub.rejects(new Error(errorMessage));
+
+		await assert.rejects(
+			executeTestWithWorker(env, {activities: {hardcodedPasswordLogin: hardcodedPasswordLoginStub}}, workflowFn, workflowStartOptions, workflowCoverage),
+			(err: unknown) =>
+				err instanceof WorkflowFailedError &&
+				err.cause instanceof ActivityFailure &&
+				err.cause.cause instanceof ApplicationFailure &&
+				err.cause.cause.message === errorMessage
+		);
+	});
 });
-// @@@SNIPEND

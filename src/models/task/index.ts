@@ -1,7 +1,7 @@
 import {TaskQueue} from '@models/taskQueue';
 import {Jobar} from '@src/jobar';
 import {findInitialError} from '@src/utils';
-import {Workflow, WorkflowStartOptions} from '@temporalio/client';
+import {ScheduleClient, ScheduleOptions, Workflow, WorkflowStartOptions} from '@temporalio/client';
 import {WorkflowError} from '@temporalio/workflow';
 import {camelize} from '@utils/camelize';
 import {formatId} from '@utils/format-id';
@@ -15,6 +15,7 @@ export interface TaskOptions {
 	endpoint?: string;
 	prefixUrl?: string;
 	needWorkflowFullRequest?: boolean;
+	scheduleOptions?: ScheduleOptions;
 }
 
 export class Task {
@@ -50,6 +51,10 @@ export class Task {
 		return this.taskQueue.hasTask(this);
 	}
 
+	get isScheduled() {
+		return !!this.options.scheduleOptions;
+	}
+
 	get info() {
 		if (this.isExposed && this.method) {
 			return `Task ${this.name} is exposed on ${this.method.toUpperCase()} ${this.url}`;
@@ -76,6 +81,27 @@ export class Task {
 	}
 
 	/* istanbul ignore next */
+	async createScheduler(jobarInstance: Jobar) {
+		if (!this.taskQueue) {
+			throw new Error('❌ This task is not assigned in a taskQueue.');
+		}
+		const {scheduleOptions} = this.options;
+		if (!scheduleOptions) {
+			return null;
+		}
+		const connection = await this.taskQueue.createNewConnection(jobarInstance);
+		const scheduleClient = new ScheduleClient({connection});
+		return await scheduleClient.create({
+			...scheduleOptions,
+			action: {
+				...scheduleOptions?.action,
+				workflowType: this.workflowFunction,
+				taskQueue: this.taskQueue.name,
+			},
+		});
+	}
+
+	/* istanbul ignore next */
 	async run(jobarInstance: Jobar) {
 		const {app, logger, onRequestError} = jobarInstance;
 		if (!this.isExposed) {
@@ -84,7 +110,6 @@ export class Task {
 		if (!this.method) {
 			throw new Error('❌ Set method to "get" | "post" | "put" | "patch" | "delete" in the options of this task to enable route creation');
 		}
-		logger.info(`${this.info} listening`);
 		app[this.method](this.url, async (request: Request, response: Response) => {
 			logger.debug(`⌛ ${this.info} requested`);
 			if (!this.taskQueue) {
@@ -119,5 +144,10 @@ export class Task {
 				});
 			}
 		});
+		logger.info(`👂 ${this.info} listening`);
+		if (this.isScheduled) {
+			await this.createScheduler(jobarInstance);
+			logger.info(`📅 ${this.info} scheduled`);
+		}
 	}
 }

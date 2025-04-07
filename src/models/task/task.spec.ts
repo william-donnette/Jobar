@@ -13,6 +13,15 @@ describe('Task', () => {
 			isExposed: true,
 			method: 'post',
 			endpoint: '/tasks/mockWorkflow',
+			scheduleOptions: {
+				scheduleId: '',
+				spec: {intervals: [{every: '1h'}]},
+				action: {
+					type: 'startWorkflow',
+					workflowType: mockWorkflow,
+					taskQueue: taskQueue.name,
+				},
+			},
 		});
 		taskQueue.addTask(task);
 	});
@@ -98,6 +107,17 @@ describe('Task', () => {
 		it('should return false if the task is not exposed', () => {
 			const task = new Task(mockWorkflow);
 			assert.strictEqual(task.isExposed, false);
+		});
+	});
+
+	describe('isScheduled', () => {
+		it('should return true if the task is scheduled', () => {
+			assert.strictEqual(task.isScheduled, true);
+		});
+
+		it('should return false if the task is not scheduled', () => {
+			const task = new Task(mockWorkflow);
+			assert.strictEqual(task.isScheduled, false);
 		});
 	});
 

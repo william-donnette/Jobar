@@ -99,9 +99,7 @@ export class TaskQueue {
 		worker.run();
 		for (const task of this.tasks) {
 			logger.info(`🚀 ${task.name} is running`);
-			if (task.isExposed) {
-				task.run(jobarInstance);
-			}
+			task.run(jobarInstance);
 		}
 	}
 }

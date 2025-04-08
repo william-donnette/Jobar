@@ -85,13 +85,14 @@ export class Task {
 		if (!this.taskQueue) {
 			throw new Error('❌ This task is not assigned in a taskQueue.');
 		}
+		const {logger} = jobarInstance;
 		const {scheduleOptions} = this.options;
 		if (!scheduleOptions) {
 			return null;
 		}
 		const connection = await this.taskQueue.createNewConnection(jobarInstance);
 		const scheduleClient = new ScheduleClient({connection});
-		return await scheduleClient.create({
+		const handler = await scheduleClient.create({
 			...scheduleOptions,
 			action: {
 				...scheduleOptions?.action,
@@ -99,17 +100,19 @@ export class Task {
 				taskQueue: this.taskQueue.name,
 			},
 		});
+		logger.info(`📅 ${this.info} scheduled`);
+		return handler;
 	}
 
 	/* istanbul ignore next */
-	async run(jobarInstance: Jobar) {
-		const {app, logger, onRequestError} = jobarInstance;
-		if (!this.isExposed) {
-			throw new Error('❌ Set isExposed to true in the options of this task to enable route creation');
+	async createRoute(jobarInstance: Jobar) {
+		if (!this.taskQueue) {
+			throw new Error('❌ This task is not assigned in a taskQueue.');
 		}
 		if (!this.method) {
 			throw new Error('❌ Set method to "get" | "post" | "put" | "patch" | "delete" in the options of this task to enable route creation');
 		}
+		const {app, logger, onRequestError} = jobarInstance;
 		app[this.method](this.url, async (request: Request, response: Response) => {
 			logger.debug(`⌛ ${this.info} requested`);
 			if (!this.taskQueue) {
@@ -145,9 +148,15 @@ export class Task {
 			}
 		});
 		logger.info(`👂 ${this.info} listening`);
+	}
+
+	/* istanbul ignore next */
+	async run(jobarInstance: Jobar) {
+		if (this.isExposed) {
+			await this.createRoute(jobarInstance);
+		}
 		if (this.isScheduled) {
 			await this.createScheduler(jobarInstance);
-			logger.info(`📅 ${this.info} scheduled`);
 		}
 	}
 }

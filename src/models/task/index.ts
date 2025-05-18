@@ -1,22 +1,40 @@
 import {TaskQueue} from '@models/taskQueue';
 import {Jobar} from '@src/jobar';
 import {findInitialError} from '@src/utils';
-import {ScheduleClient, ScheduleOptions, Workflow, WorkflowStartOptions} from '@temporalio/client';
+import {ScheduleClient, ScheduleOptions, ScheduleOptionsAction, Workflow, WorkflowStartOptions} from '@temporalio/client';
 import {WorkflowError} from '@temporalio/workflow';
 import {camelize} from '@utils/camelize';
 import {formatId} from '@utils/format-id';
 import {Request, Response} from 'express';
+import {v4 as uuid} from 'uuid';
 
-export interface TaskOptions {
-	workflowStartOptions?: WorkflowStartOptions;
+type CommonTaskOptions = {
+	workflowStartOptions?: Omit<WorkflowStartOptions, 'args' | 'taskQueue' | 'workflowId'>;
+	scheduleOptions?: Omit<ScheduleOptions, 'action'> & {
+		action: Omit<ScheduleOptionsAction, 'workflowType' | 'taskQueue'>;
+	};
+	useUniqueWorkflowId?: boolean;
+};
+
+type ExposedTaskOptions = CommonTaskOptions & {
+	isExposed: true;
 	setWorkflowId?: (req: Request) => string;
-	isExposed?: boolean;
-	method?: 'get' | 'post' | 'put' | 'patch' | 'delete';
-	endpoint?: string;
+	method: 'get' | 'post' | 'put' | 'patch' | 'delete';
+	endpoint: string;
 	prefixUrl?: string;
 	needWorkflowFullRequest?: boolean;
-	scheduleOptions?: ScheduleOptions;
-}
+};
+
+type InternalTaskOptions = CommonTaskOptions & {
+	isExposed?: false;
+	setWorkflowId?: never;
+	method?: never;
+	endpoint?: never;
+	prefixUrl?: never;
+	needWorkflowFullRequest?: never;
+};
+
+export type TaskOptions = ExposedTaskOptions | InternalTaskOptions;
 
 export class Task {
 	private taskQueue: TaskQueue | undefined;
@@ -74,9 +92,15 @@ export class Task {
 		}
 	}
 
-	getWorkflowId(req: Request) {
-		const {setWorkflowId} = this.options;
-		const workflowId = setWorkflowId ? setWorkflowId(req) : 'workflow-' + this.name;
+	getWorkflowId(req: Request, jobarInstance: Jobar) {
+		const {setWorkflowId, useUniqueWorkflowId = jobarInstance.useUniqueWorkflowId} = this.options;
+		let workflowId = 'workflow-' + this.name;
+		if (setWorkflowId) {
+			workflowId = setWorkflowId(req);
+		}
+		if (useUniqueWorkflowId) {
+			workflowId += '-' + uuid();
+		}
 		return formatId(workflowId);
 	}
 
@@ -92,6 +116,9 @@ export class Task {
 		}
 		const connection = await this.taskQueue.createNewConnection(jobarInstance);
 		const scheduleClient = new ScheduleClient({connection});
+		try {
+			await scheduleClient.getHandle(scheduleOptions.scheduleId).delete();
+		} catch {}
 		const handler = await scheduleClient.create({
 			...scheduleOptions,
 			action: {
@@ -119,7 +146,7 @@ export class Task {
 				throw new Error('❌ This task is not assigned in a taskQueue.');
 			}
 			const {workflowStartOptions} = this.options ?? {};
-			const workflowId = this.getWorkflowId(request);
+			const workflowId = this.getWorkflowId(request, jobarInstance);
 			try {
 				const client = await this.taskQueue.createNewClient(jobarInstance);
 				const handle = await client.workflow.start(this.workflowFunction, {

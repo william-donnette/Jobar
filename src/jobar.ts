@@ -14,6 +14,7 @@ export interface JobarOptions {
 	namespace?: string;
 	onRequestError: (context: JobarRequestContextError) => any;
 	activities: WorkerOptions['activities'];
+	useUniqueWorkflowId?: Boolean;
 }
 
 export interface JobarRequestContextError {
@@ -35,8 +36,19 @@ export class Jobar {
 	namespace: string;
 	onRequestError: (context: JobarRequestContextError) => any;
 	connection?: NativeConnection;
+	useUniqueWorkflowId: Boolean;
 
-	constructor({app, workflowsPath, temporalAddress, logger, logLevel = 'debug', namespace = 'default', onRequestError, activities}: JobarOptions) {
+	constructor({
+		app,
+		workflowsPath,
+		temporalAddress,
+		logger,
+		logLevel = 'debug',
+		namespace = 'default',
+		onRequestError,
+		activities,
+		useUniqueWorkflowId = false,
+	}: JobarOptions) {
 		this.app = app;
 		this.temporalAddress = temporalAddress;
 		this.workflowsPath = workflowsPath;
@@ -45,6 +57,7 @@ export class Jobar {
 		this.logger = logger ?? getDefaultLogger(this.logLevel);
 		this.onRequestError = onRequestError;
 		this.activities = activities;
+		this.useUniqueWorkflowId = useUniqueWorkflowId;
 	}
 
 	addTaskQueue(...taskQueues: Array<TaskQueue>) {

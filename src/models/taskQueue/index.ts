@@ -24,12 +24,14 @@ export class TaskQueue {
 		return camelize(this._name);
 	}
 
-	addTask(task: Task) {
-		if (this.hasTask(task)) {
-			throw new Error('❌ This task is already in this taskQueue.');
-		}
-		this.tasks.push(task);
-		task.setTaskQueue(this);
+	addTask(...tasks: Array<Task>) {
+		tasks.forEach((task) => {
+			if (this.hasTask(task)) {
+				throw new Error(`❌ Task ${task.name} is already in this taskQueue.`);
+			}
+			this.tasks.push(task);
+			task.setTaskQueue(this);
+		});
 		return this;
 	}
 

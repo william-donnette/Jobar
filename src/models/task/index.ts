@@ -115,7 +115,7 @@ export class Task {
 			return null;
 		}
 		const connection = await this.taskQueue.createNewConnection(jobarInstance);
-		const scheduleClient = new ScheduleClient({connection});
+		const scheduleClient = new ScheduleClient({connection, namespace: jobarInstance.namespace});
 		try {
 			await scheduleClient.getHandle(scheduleOptions.scheduleId).delete();
 		} catch {}

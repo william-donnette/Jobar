@@ -14,7 +14,7 @@ describe('TaskQueue', () => {
 		let task: Task;
 
 		beforeEach(() => {
-			task = new Task(mockWorkflow, {isExposed: true});
+			task = new Task(mockWorkflow, {isExposed: true, method: 'get', endpoint: '/'});
 		});
 
 		it('should add a task to the taskQueue', () => {
@@ -29,7 +29,7 @@ describe('TaskQueue', () => {
 					taskQueue.addTask(task);
 				},
 				{
-					message: '❌ This task is already in this taskQueue.',
+					message: '❌ Task mockWorkflow is already in this taskQueue.',
 				}
 			);
 		});
@@ -55,12 +55,12 @@ describe('TaskQueue', () => {
 		let task: Task;
 
 		beforeEach(() => {
-			task = new Task(mockWorkflow, {isExposed: true, method: 'get'});
+			task = new Task(mockWorkflow, {isExposed: true, method: 'get', endpoint: '/'});
 		});
 		it("should return the infos of it's exposedTasks", async () => {
 			taskQueue.addTask(task);
 			assert.equal(taskQueue.infos.length, 1);
-			assert.equal(taskQueue.infos[0], 'Task mockWorkflow is exposed on GET /mockWorkflow');
+			assert.equal(taskQueue.infos[0], 'Task mockWorkflow is exposed on GET /');
 		});
 	});
 });

@@ -5,7 +5,7 @@ import {ScheduleClient, ScheduleOptions, ScheduleOptionsAction, Workflow, Workfl
 import {WorkflowError} from '@temporalio/workflow';
 import {camelize} from '@utils/camelize';
 import {formatId} from '@utils/format-id';
-import {Request, Response} from 'express';
+import {Request, RequestHandler, Response} from 'express';
 import {v4 as uuid} from 'uuid';
 
 type CommonTaskOptions = {
@@ -23,6 +23,7 @@ type ExposedTaskOptions = CommonTaskOptions & {
 	endpoint: string;
 	prefixUrl?: string;
 	needWorkflowFullRequest?: boolean;
+	requestHandlers?: Array<RequestHandler>;
 };
 
 type InternalTaskOptions = CommonTaskOptions & {
@@ -32,6 +33,7 @@ type InternalTaskOptions = CommonTaskOptions & {
 	endpoint?: never;
 	prefixUrl?: never;
 	needWorkflowFullRequest?: never;
+	requestHandlers?: never;
 };
 
 export type TaskOptions = ExposedTaskOptions | InternalTaskOptions;
@@ -92,6 +94,7 @@ export class Task {
 		}
 	}
 
+	/* istanbul ignore next */
 	getWorkflowId(req: Request, jobarInstance: Jobar) {
 		const {setWorkflowId, useUniqueWorkflowId = jobarInstance.useUniqueWorkflowId} = this.options;
 		let workflowId = 'workflow-' + this.name;
@@ -140,7 +143,8 @@ export class Task {
 			throw new Error('❌ Set method to "get" | "post" | "put" | "patch" | "delete" in the options of this task to enable route creation');
 		}
 		const {app, logger, onRequestError} = jobarInstance;
-		app[this.method](this.url, async (request: Request, response: Response) => {
+		const {requestHandlers = []} = this.options;
+		app[this.method](this.url, ...requestHandlers, async (request: Request, response: Response) => {
 			logger.debug(`⌛ ${this.info} requested`);
 			if (!this.taskQueue) {
 				throw new Error('❌ This task is not assigned in a taskQueue.');

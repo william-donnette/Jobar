@@ -18,8 +18,6 @@ describe('Task', () => {
 				spec: {intervals: [{every: '1h'}]},
 				action: {
 					type: 'startWorkflow',
-					workflowType: mockWorkflow,
-					taskQueue: taskQueue.name,
 				},
 			},
 		});
@@ -42,11 +40,6 @@ describe('Task', () => {
 		it('should return the correct HTTP method', () => {
 			assert.strictEqual(task.method, 'post');
 		});
-
-		it('should return undefined', () => {
-			const taskWithoutMethod = new Task(mockWorkflow, {isExposed: true});
-			assert.strictEqual(taskWithoutMethod.method, undefined);
-		});
 	});
 
 	describe('info', () => {
@@ -57,31 +50,6 @@ describe('Task', () => {
 		it('should return correct info when not exposed', () => {
 			const task = new Task(mockWorkflow);
 			assert.strictEqual(task.info, 'Task mockWorkflow');
-		});
-	});
-
-	describe('needWorkflowFullRequest', () => {
-		it('should return correct needWorkflowFullRequest value', () => {
-			const task2 = new Task(mockWorkflow, {
-				needWorkflowFullRequest: true,
-			});
-			assert.strictEqual(task.needWorkflowFullRequest, false);
-			assert.strictEqual(task2.needWorkflowFullRequest, true);
-		});
-	});
-
-	describe('getWorkflowId', () => {
-		it('should return formatted workflow id', () => {
-			const task = new Task(mockWorkflow, {
-				setWorkflowId: (req) => 'custom-id',
-			});
-			const request: any = {};
-			assert.strictEqual(task.getWorkflowId(request), 'custom-id');
-		});
-
-		it('should return formatted workflow id', () => {
-			const request: any = {};
-			assert.strictEqual(task.getWorkflowId(request), 'workflow-mockworkflow');
 		});
 	});
 

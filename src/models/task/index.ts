@@ -22,7 +22,6 @@ type ExposedTaskOptions = CommonTaskOptions & {
 	method: 'get' | 'post' | 'put' | 'patch' | 'delete';
 	endpoint: string;
 	prefixUrl?: string;
-	needWorkflowFullRequest?: boolean;
 	requestHandlers?: Array<RequestHandler>;
 };
 
@@ -32,7 +31,6 @@ type InternalTaskOptions = CommonTaskOptions & {
 	method?: never;
 	endpoint?: never;
 	prefixUrl?: never;
-	needWorkflowFullRequest?: never;
 	requestHandlers?: never;
 };
 
@@ -80,10 +78,6 @@ export class Task {
 			return `Task ${this.name} [${this.method.toUpperCase()} ${this.url}]`;
 		}
 		return `Task ${this.name}`;
-	}
-
-	get needWorkflowFullRequest() {
-		return this.options.needWorkflowFullRequest ?? false;
 	}
 
 	setTaskQueue(taskQueue: TaskQueue) {
@@ -155,7 +149,7 @@ export class Task {
 				const client = await this.taskQueue.createNewClient(jobarInstance);
 				const handle = await client.workflow.start(this.workflowFunction, {
 					...workflowStartOptions,
-					args: this.needWorkflowFullRequest ? [request, response] : [request.body, request.headers],
+					args: [request.body, request.headers],
 					taskQueue: this.taskQueue.name,
 					workflowId,
 				});

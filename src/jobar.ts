@@ -78,7 +78,7 @@ export class Jobar {
 		});
 		this.logger.info(`✅ Connected to temporal`);
 		for (const taskQueue of this.tasksQueues) {
-			taskQueue.run(this);
+			await taskQueue.run(this);
 		}
 	}
 }

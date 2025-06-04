@@ -98,10 +98,10 @@ export class TaskQueue {
 		const {logger} = jobarInstance;
 		const worker = await this.createWorker(jobarInstance);
 		logger.info(`🚩 ${this._name.toUpperCase()} installation`);
-		worker.run();
+		await worker.run();
 		for (const task of this.tasks) {
 			logger.info(`🚀 ${task.name} is running`);
-			task.run(jobarInstance);
+			await task.run(jobarInstance);
 		}
 	}
 }

@@ -173,7 +173,7 @@ export class Task {
 			}
 		});
 		if (requestHandlers.length > 0) {
-			if (requestHandlers.length > 1) {
+			if (requestHandlers.length === 1) {
 				logger.info(`👂 ${this.info} listening with 1 handler`);
 			} else {
 				logger.info(`👂 ${this.info} listening with ${requestHandlers.length} handlers`);

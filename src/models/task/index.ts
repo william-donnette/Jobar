@@ -14,7 +14,6 @@ type CommonTaskOptions = {
 		action: Omit<ScheduleOptionsAction, 'workflowType' | 'taskQueue'>;
 	};
 	useUniqueWorkflowId?: boolean;
-	middlewares?: Array<Function>;
 };
 
 type ExposedTaskOptions = CommonTaskOptions & {
@@ -144,18 +143,13 @@ export class Task {
 			if (!this.taskQueue) {
 				throw new Error('❌ This task is not assigned in a taskQueue.');
 			}
-			const {workflowStartOptions, middlewares = []} = this.options ?? {};
-
+			const {workflowStartOptions} = this.options ?? {};
 			const workflowId = this.getWorkflowId(request, jobarInstance);
 			try {
-				let input;
-				for (const middleware of middlewares) {
-					input = middleware(request, response, input);
-				}
 				const client = await this.taskQueue.createNewClient(jobarInstance);
 				const handle = await client.workflow.start(this.workflowFunction, {
 					...workflowStartOptions,
-					args: middlewares.length > 0 ? [request.body, request.headers, input] : [request.body, request.headers],
+					args: [request.body, request.headers],
 					taskQueue: this.taskQueue.name,
 					workflowId,
 				});
@@ -178,7 +172,15 @@ export class Task {
 				});
 			}
 		});
-		logger.info(`👂 ${this.info} listening`);
+		if (requestHandlers.length > 0) {
+			if (requestHandlers.length > 1) {
+				logger.info(`👂 ${this.info} listening with 1 handler`);
+			} else {
+				logger.info(`👂 ${this.info} listening with ${requestHandlers.length} handlers`);
+			}
+		} else {
+			logger.info(`👂 ${this.info} listening`);
+		}
 	}
 
 	/* istanbul ignore next */

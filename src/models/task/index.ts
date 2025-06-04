@@ -14,6 +14,7 @@ type CommonTaskOptions = {
 		action: Omit<ScheduleOptionsAction, 'workflowType' | 'taskQueue'>;
 	};
 	useUniqueWorkflowId?: boolean;
+	middlewares?: Array<Function>;
 };
 
 type ExposedTaskOptions = CommonTaskOptions & {
@@ -143,9 +144,13 @@ export class Task {
 			if (!this.taskQueue) {
 				throw new Error('❌ This task is not assigned in a taskQueue.');
 			}
-			const {workflowStartOptions} = this.options ?? {};
+			const {workflowStartOptions, middlewares = []} = this.options ?? {};
+
 			const workflowId = this.getWorkflowId(request, jobarInstance);
 			try {
+				for (const middleware of middlewares) {
+					middleware(request, response);
+				}
 				const client = await this.taskQueue.createNewClient(jobarInstance);
 				const handle = await client.workflow.start(this.workflowFunction, {
 					...workflowStartOptions,

@@ -148,13 +148,14 @@ export class Task {
 
 			const workflowId = this.getWorkflowId(request, jobarInstance);
 			try {
+				let input;
 				for (const middleware of middlewares) {
-					middleware(request, response);
+					input = middleware(request, response, input);
 				}
 				const client = await this.taskQueue.createNewClient(jobarInstance);
 				const handle = await client.workflow.start(this.workflowFunction, {
 					...workflowStartOptions,
-					args: [request.body, request.headers],
+					args: middlewares.length > 0 ? [request.body, request.headers, input] : [request.body, request.headers],
 					taskQueue: this.taskQueue.name,
 					workflowId,
 				});

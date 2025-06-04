@@ -77,7 +77,7 @@ export class Task {
 
 	get info() {
 		if (this.isExposed && this.method) {
-			return `Task ${this.name} is exposed on ${this.method.toUpperCase()} ${this.url}`;
+			return `Task ${this.name} [${this.method.toUpperCase()} ${this.url}]`;
 		}
 		return `Task ${this.name}`;
 	}

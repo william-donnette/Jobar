@@ -1,4 +1,5 @@
 import {TaskQueue} from '@models/taskQueue';
+import {Client, ClientOptions, Connection, ConnectionOptions} from '@temporalio/client';
 import {NativeConnection, WorkerOptions} from '@temporalio/worker';
 import {WorkflowError} from '@temporalio/workflow';
 import {getDefaultLogger} from '@utils/logger';
@@ -68,6 +69,29 @@ export class Jobar {
 			this.tasksQueues.push(taskQueue);
 		});
 		return this;
+	}
+
+	/* istanbul ignore next */
+	async createNewConnection(connectionOptions?: ConnectionOptions) {
+		this.logger.debug(`New connection on ${connectionOptions?.address ?? this.temporalAddress}`);
+		return await Connection.connect({
+			address: this.temporalAddress,
+			...connectionOptions,
+		});
+	}
+
+	/* istanbul ignore next */
+	async createNewClient(clientOptions?: ClientOptions, connectionOptions?: ConnectionOptions) {
+		const connection = await this.createNewConnection(connectionOptions);
+		const dataConverter = clientOptions?.dataConverter;
+		const isCrypted = !!dataConverter;
+		this.logger.debug(`${isCrypted ? '🔐 New crypted' : 'New'} client on ${clientOptions?.namespace ?? this.namespace}`);
+		return new Client({
+			connection,
+			namespace: this.namespace,
+			dataConverter,
+			...clientOptions,
+		});
 	}
 
 	/* istanbul ignore next */

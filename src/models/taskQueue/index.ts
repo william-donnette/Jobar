@@ -6,8 +6,9 @@ import {camelize} from '@utils/camelize';
 
 export interface TaskQueueOptions {
 	getDataConverter?: () => Promise<DataConverter>;
-	connectionOptions?: ConnectionOptions;
-	clientOptions?: ClientOptions;
+	connectionOptions?: Omit<ConnectionOptions, 'address'>;
+	clientOptions?: Omit<ClientOptions, 'dataConverter' | 'connection' | 'namespace'>;
+	workerOptions?: Omit<WorkerOptions, 'connection' | 'namespace' | 'taskQueue' | 'dataConverter' | 'workflowsPath' | 'activities'>;
 }
 
 export class TaskQueue {
@@ -47,6 +48,10 @@ export class TaskQueue {
 		return this.exposedTasks.map((task) => task.info);
 	}
 
+	get isCrypted() {
+		return !!this.options.getDataConverter;
+	}
+
 	/* istanbul ignore next */
 	private async getDataConverter() {
 		const {getDataConverter} = this.options;
@@ -57,10 +62,10 @@ export class TaskQueue {
 	async createNewConnection(jobarInstance: Jobar) {
 		const {temporalAddress, logger} = jobarInstance;
 		const {connectionOptions} = this.options;
-		logger.debug(`New connection on ${connectionOptions?.address ?? temporalAddress}`);
+		logger.debug(`New connection on ${temporalAddress}`);
 		return await Connection.connect({
-			address: temporalAddress,
 			...connectionOptions,
+			address: temporalAddress,
 		});
 	}
 
@@ -69,21 +74,21 @@ export class TaskQueue {
 		const {namespace, logger} = jobarInstance;
 		const {clientOptions} = this.options;
 		const connection = await this.createNewConnection(jobarInstance);
-		const dataConverter = await this.getDataConverter();
-		const isCrypted = !!dataConverter;
-		logger.debug(`${isCrypted ? '🔐 New crypted' : 'New'} client on ${clientOptions?.namespace ?? namespace}`);
+		logger.debug(`${this.isCrypted ? '🔐 New crypted' : 'New'} client on ${namespace}`);
 		return new Client({
+			...clientOptions,
 			connection,
 			namespace: namespace,
-			dataConverter,
-			...clientOptions,
+			dataConverter: await this.getDataConverter(),
 		});
 	}
 
 	/* istanbul ignore next */
 	async createWorker(jobarInstance: Jobar) {
 		const {activities, workflowsPath, namespace, connection} = jobarInstance;
+		const workerOptions = this.options.workerOptions ?? jobarInstance.workerOptions;
 		return await Worker.create({
+			...workerOptions,
 			connection,
 			namespace: namespace,
 			taskQueue: this.name,

@@ -23,6 +23,9 @@ export interface JobarOptions {
 	activities: WorkerOptions['activities'];
 	useUniqueWorkflowId?: Boolean;
 	workflowContextWrapper?: WorkflowContextWrapper;
+	connectionOptions?: Omit<ConnectionOptions, 'address'>;
+	clientOptions?: Omit<ClientOptions, 'dataConverter' | 'connection' | 'namespace'>;
+	workerOptions?: Omit<WorkerOptions, 'connection' | 'namespace' | 'taskQueue' | 'dataConverter' | 'workflowsPath' | 'activities'>;
 }
 
 export interface JobarRequestContextError {
@@ -55,6 +58,9 @@ export class Jobar {
 	#connection?: NativeConnection;
 	readonly useUniqueWorkflowId: Boolean;
 	readonly workflowContextWrapper?: WorkflowContextWrapper;
+	readonly connectionOptions?: Omit<ConnectionOptions, 'address'>;
+	readonly clientOptions?: Omit<ClientOptions, 'dataConverter' | 'connection' | 'namespace'>;
+	readonly workerOptions?: Omit<WorkerOptions, 'connection' | 'namespace' | 'taskQueue' | 'dataConverter' | 'workflowsPath' | 'activities'>;
 
 	constructor({
 		app,
@@ -67,6 +73,9 @@ export class Jobar {
 		activities,
 		useUniqueWorkflowId = false,
 		workflowContextWrapper,
+		workerOptions,
+		clientOptions,
+		connectionOptions,
 	}: JobarOptions) {
 		this.app = app;
 		this.temporalAddress = temporalAddress;
@@ -78,6 +87,9 @@ export class Jobar {
 		this.activities = activities;
 		this.useUniqueWorkflowId = useUniqueWorkflowId;
 		this.workflowContextWrapper = workflowContextWrapper;
+		this.workerOptions = workerOptions;
+		this.clientOptions = clientOptions;
+		this.connectionOptions = connectionOptions;
 	}
 
 	addTaskQueue(...taskQueues: Array<TaskQueue>) {

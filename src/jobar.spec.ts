@@ -22,17 +22,15 @@ describe('Jobar', () => {
 	});
 
 	it('should initialize with default values', () => {
-		assert.strictEqual(jobar.logLevel, 'debug');
 		assert.strictEqual(jobar.namespace, 'default');
 	});
 
 	it('should override default values when provided', () => {
-		const customLogger = getDefaultLogger('info');
+		const customLogger = getDefaultLogger('INFO');
 		jobar = new Jobar({
 			app,
 			workflowsPath: './workflows',
 			temporalAddress: 'localhost:7233',
-			logLevel: 'info',
 			namespace: 'customNamespace',
 			logger: customLogger,
 			onRequestError: ({workflowError}) => {
@@ -41,7 +39,6 @@ describe('Jobar', () => {
 			activities: [],
 		});
 
-		assert.strictEqual(jobar.logLevel, 'info');
 		assert.strictEqual(jobar.namespace, 'customNamespace');
 		assert.strictEqual(jobar.logger, customLogger);
 	});

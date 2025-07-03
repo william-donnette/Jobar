@@ -1,10 +1,9 @@
 import {TaskQueue} from '@models/taskQueue';
 import {Client, ClientOptions, Connection, ConnectionOptions, WorkflowStartOptions} from '@temporalio/client';
-import {NativeConnection, WorkerOptions} from '@temporalio/worker';
+import {Logger, NativeConnection, WorkerOptions} from '@temporalio/worker';
 import {WorkflowError} from '@temporalio/workflow';
-import {getDefaultLogger} from '@utils/logger';
+import {getDefaultLogger, LogLevel} from '@utils/logger';
 import {Express, Request, Response} from 'express';
-import {Logger} from 'winston';
 import {TaskOptions, WorkflowResult} from './models';
 
 export type WorkflowContextWrapper = <T = WorkflowResult>(
@@ -17,7 +16,7 @@ export interface JobarOptions {
 	workflowsPath: string;
 	temporalAddress: string;
 	logger?: Logger;
-	logLevel?: string;
+	logLevel?: LogLevel;
 	namespace?: string;
 	onRequestError: (context: JobarRequestContextError) => any;
 	activities: WorkerOptions['activities'];
@@ -52,7 +51,6 @@ export class Jobar {
 	readonly workflowsPath: string;
 	readonly temporalAddress: string;
 	readonly logger: Logger;
-	readonly logLevel: string;
 	readonly namespace: string;
 	readonly onRequestError: (context: JobarRequestContextError) => any;
 	#connection?: NativeConnection;
@@ -66,8 +64,8 @@ export class Jobar {
 		app,
 		workflowsPath,
 		temporalAddress,
+		logLevel = 'DEBUG',
 		logger,
-		logLevel = 'debug',
 		namespace = 'default',
 		onRequestError,
 		activities,
@@ -80,9 +78,8 @@ export class Jobar {
 		this.app = app;
 		this.temporalAddress = temporalAddress;
 		this.workflowsPath = workflowsPath;
-		this.logLevel = logger?.level ?? logLevel;
 		this.namespace = namespace;
-		this.logger = logger ?? getDefaultLogger(this.logLevel);
+		this.logger = logger ?? getDefaultLogger(logLevel);
 		this.onRequestError = onRequestError;
 		this.activities = activities;
 		this.useUniqueWorkflowId = useUniqueWorkflowId;

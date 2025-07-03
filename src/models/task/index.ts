@@ -1,5 +1,5 @@
 import {TaskQueue} from '@models/taskQueue';
-import {Jobar} from '@src/jobar';
+import {Jobar, JobarRequestContextError, WorkflowContextWrapper} from '@src/jobar';
 import {findInitialError} from '@src/utils';
 import {ScheduleClient, ScheduleOptions, ScheduleOptionsAction, Workflow, WorkflowStartOptions} from '@temporalio/client';
 import {WorkflowError} from '@temporalio/workflow';
@@ -8,12 +8,16 @@ import {formatId} from '@utils/format-id';
 import {Request, RequestHandler, Response} from 'express';
 import {v4 as uuid} from 'uuid';
 
+export type WorkflowResult = any;
+
 type CommonTaskOptions = {
 	workflowStartOptions?: Omit<WorkflowStartOptions, 'args' | 'taskQueue' | 'workflowId'>;
 	scheduleOptions?: Omit<ScheduleOptions, 'action'> & {
 		action: Omit<ScheduleOptionsAction, 'workflowType' | 'taskQueue'>;
 	};
 	useUniqueWorkflowId?: boolean;
+	onRequestError?: (context: JobarRequestContextError) => any;
+	workflowContextWrapper?: WorkflowContextWrapper;
 };
 
 type ExposedTaskOptions = CommonTaskOptions & {
@@ -136,30 +140,50 @@ export class Task {
 		if (!this.method) {
 			throw new Error('❌ Set method to "get" | "post" | "put" | "patch" | "delete" in the options of this task to enable route creation');
 		}
-		const {app, logger, onRequestError} = jobarInstance;
+		const {app, logger} = jobarInstance;
+		const onRequestError = this.options.onRequestError ?? jobarInstance.onRequestError;
+		const workflowContextWrapper = this.options.workflowContextWrapper ?? jobarInstance.workflowContextWrapper;
 		const {requestHandlers = []} = this.options;
 		app[this.method](this.url, ...requestHandlers, async (request: Request, response: Response) => {
 			logger.debug(`⌛ ${this.info} requested`);
 			if (!this.taskQueue) {
 				throw new Error('❌ This task is not assigned in a taskQueue.');
 			}
-			const {workflowStartOptions} = this.options ?? {};
 			const workflowId = this.getWorkflowId(request, jobarInstance);
+			const workflowStartOptions = {
+				...this.options.workflowStartOptions,
+				args: [request.body, request.headers],
+				taskQueue: this.taskQueue.name,
+				workflowId,
+			};
 			try {
-				const client = await this.taskQueue.createNewClient(jobarInstance);
-				const handle = await client.workflow.start(this.workflowFunction, {
-					...workflowStartOptions,
-					args: [request.body, request.headers],
-					taskQueue: this.taskQueue.name,
-					workflowId,
-				});
-				logger.debug(`⌛ WORKFLOW ${workflowId} requested`);
-				const result = await handle.result();
-				logger.debug(`✅ WORKFLOW ${workflowId} ended`);
-				if (!response.headersSent) {
-					response.status(200).json(result ?? null);
-				}
-				return result;
+				const startWorkflow = async (options?: Partial<WorkflowStartOptions>): Promise<WorkflowResult> => {
+					if (!this.taskQueue) {
+						throw new Error('❌ This task is not assigned in a taskQueue.');
+					}
+					const client = await this.taskQueue.createNewClient(jobarInstance);
+					const handle = await client.workflow.start(this.workflowFunction, {
+						...workflowStartOptions,
+						...options,
+					});
+					logger.debug(`⌛ WORKFLOW ${workflowId} requested`);
+					const result = await handle.result();
+					logger.info(`✅ WORKFLOW ${workflowId} ended`);
+					if (!response.headersSent) {
+						response.status(200).json(result ?? null);
+					}
+					return result;
+				};
+
+				return workflowContextWrapper
+					? workflowContextWrapper(startWorkflow, {
+							request,
+							response,
+							jobarInstance,
+							taskOptions: this.options,
+							workflowStartOptions,
+					  })
+					: startWorkflow(workflowStartOptions);
 			} catch (workflowError: unknown) {
 				logger.error(`❌ WORKFLOW ${workflowId} failed`);
 				return await onRequestError({
@@ -174,12 +198,12 @@ export class Task {
 		});
 		if (requestHandlers.length > 0) {
 			if (requestHandlers.length === 1) {
-				logger.info(`👂 ${this.info} listening with 1 handler`);
+				logger.info(`📡 ${this.info} listening with 1 handler`);
 			} else {
-				logger.info(`👂 ${this.info} listening with ${requestHandlers.length} handlers`);
+				logger.info(`📡 ${this.info} listening with ${requestHandlers.length} handlers`);
 			}
 		} else {
-			logger.info(`👂 ${this.info} listening`);
+			logger.info(`📡 ${this.info} listening`);
 		}
 	}
 

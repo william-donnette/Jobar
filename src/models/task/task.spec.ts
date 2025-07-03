@@ -44,7 +44,7 @@ describe('Task', () => {
 
 	describe('info', () => {
 		it('should return the correct info', () => {
-			assert.equal(task.info, 'Task mockWorkflow is exposed on POST /tasks/mockWorkflow');
+			assert.equal(task.info, 'Task mockWorkflow [POST /tasks/mockWorkflow]');
 		});
 
 		it('should return correct info when not exposed', () => {

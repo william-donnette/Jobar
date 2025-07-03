@@ -1,10 +1,16 @@
 import {TaskQueue} from '@models/taskQueue';
-import {Client, ClientOptions, Connection, ConnectionOptions} from '@temporalio/client';
+import {Client, ClientOptions, Connection, ConnectionOptions, WorkflowStartOptions} from '@temporalio/client';
 import {NativeConnection, WorkerOptions} from '@temporalio/worker';
 import {WorkflowError} from '@temporalio/workflow';
 import {getDefaultLogger} from '@utils/logger';
 import {Express, Request, Response} from 'express';
 import {Logger} from 'winston';
+import {TaskOptions, WorkflowResult} from './models';
+
+export type WorkflowContextWrapper = <T = WorkflowResult>(
+	startWorkflow: (options?: Partial<WorkflowStartOptions>) => Promise<T>,
+	context: JobarWorkflowContext
+) => Promise<T>;
 
 export interface JobarOptions {
 	app: Express;
@@ -16,6 +22,7 @@ export interface JobarOptions {
 	onRequestError: (context: JobarRequestContextError) => any;
 	activities: WorkerOptions['activities'];
 	useUniqueWorkflowId?: Boolean;
+	workflowContextWrapper?: WorkflowContextWrapper;
 }
 
 export interface JobarRequestContextError {
@@ -26,18 +33,28 @@ export interface JobarRequestContextError {
 	response: Response;
 	jobarInstance: Jobar;
 }
+
+export interface JobarWorkflowContext {
+	workflowStartOptions: WorkflowStartOptions;
+	taskOptions: TaskOptions;
+	jobarInstance: Jobar;
+	request: Request;
+	response: Response;
+}
+
 export class Jobar {
 	private readonly tasksQueues: Array<TaskQueue> = [];
-	app: Express;
-	activities: WorkerOptions['activities'];
-	workflowsPath: string;
-	temporalAddress: string;
-	logger: Logger;
-	logLevel: string;
-	namespace: string;
-	onRequestError: (context: JobarRequestContextError) => any;
-	connection?: NativeConnection;
-	useUniqueWorkflowId: Boolean;
+	readonly app: Express;
+	readonly activities: WorkerOptions['activities'];
+	readonly workflowsPath: string;
+	readonly temporalAddress: string;
+	readonly logger: Logger;
+	readonly logLevel: string;
+	readonly namespace: string;
+	readonly onRequestError: (context: JobarRequestContextError) => any;
+	#connection?: NativeConnection;
+	readonly useUniqueWorkflowId: Boolean;
+	readonly workflowContextWrapper?: WorkflowContextWrapper;
 
 	constructor({
 		app,
@@ -49,6 +66,7 @@ export class Jobar {
 		onRequestError,
 		activities,
 		useUniqueWorkflowId = false,
+		workflowContextWrapper,
 	}: JobarOptions) {
 		this.app = app;
 		this.temporalAddress = temporalAddress;
@@ -59,6 +77,7 @@ export class Jobar {
 		this.onRequestError = onRequestError;
 		this.activities = activities;
 		this.useUniqueWorkflowId = useUniqueWorkflowId;
+		this.workflowContextWrapper = workflowContextWrapper;
 	}
 
 	addTaskQueue(...taskQueues: Array<TaskQueue>) {
@@ -69,6 +88,10 @@ export class Jobar {
 			this.tasksQueues.push(taskQueue);
 		});
 		return this;
+	}
+
+	get connection() {
+		return this.#connection;
 	}
 
 	/* istanbul ignore next */
@@ -97,7 +120,7 @@ export class Jobar {
 	/* istanbul ignore next */
 	async run() {
 		this.logger.info(`🚀 Try to connect to temporal on ${this.temporalAddress}..`);
-		this.connection = await NativeConnection.connect({
+		this.#connection = await NativeConnection.connect({
 			address: this.temporalAddress,
 		});
 		this.logger.info(`✅ Connected to temporal`);

@@ -60,7 +60,7 @@ describe('TaskQueue', () => {
 		it("should return the infos of it's exposedTasks", async () => {
 			taskQueue.addTask(task);
 			assert.equal(taskQueue.infos.length, 1);
-			assert.equal(taskQueue.infos[0], 'Task mockWorkflow is exposed on GET /');
+			assert.equal(taskQueue.infos[0], 'Task mockWorkflow [GET /]');
 		});
 	});
 });

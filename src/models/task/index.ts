@@ -176,14 +176,14 @@ export class Task {
 				};
 
 				return workflowContextWrapper
-					? workflowContextWrapper(startWorkflow, {
+					? await workflowContextWrapper(startWorkflow, {
 							request,
 							response,
 							jobarInstance,
 							taskOptions: this.options,
 							workflowStartOptions,
 					  })
-					: startWorkflow(workflowStartOptions);
+					: await startWorkflow(workflowStartOptions);
 			} catch (workflowError: unknown) {
 				logger.error(`❌ WORKFLOW ${workflowId} failed`);
 				return await onRequestError({

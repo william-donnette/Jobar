@@ -1,6 +1,6 @@
 import {TaskQueue} from '@models/taskQueue';
 import {Jobar, JobarRequestContextError, WorkflowContextWrapper} from '@src/jobar';
-import {findInitialError} from '@src/utils';
+import {findInitialError, verifyWorkflowPayloadSize} from '@src/utils';
 import {ScheduleClient, ScheduleOptions, ScheduleOptionsAction, Workflow, WorkflowStartOptions} from '@temporalio/client';
 import {WorkflowError} from '@temporalio/workflow';
 import {camelize} from '@utils/camelize';
@@ -115,11 +115,13 @@ export class Task {
 		if (!scheduleOptions) {
 			return null;
 		}
+		verifyWorkflowPayloadSize(scheduleOptions.action.args, 4);
 		const connection = await this.taskQueue.createNewConnection(jobarInstance);
 		const scheduleClient = new ScheduleClient({connection, namespace: jobarInstance.namespace});
 		try {
 			await scheduleClient.getHandle(scheduleOptions.scheduleId).delete();
 		} catch {}
+
 		const handler = await scheduleClient.create({
 			...scheduleOptions,
 			action: {
@@ -161,11 +163,13 @@ export class Task {
 					if (!this.taskQueue) {
 						throw new Error('❌ This task is not assigned in a taskQueue.');
 					}
-					const client = await this.taskQueue.createNewClient(jobarInstance);
-					const handle = await client.workflow.start(this.workflowFunction, {
+					const handleOptions = {
 						...workflowStartOptions,
 						...options,
-					});
+					};
+					verifyWorkflowPayloadSize(handleOptions.args, 4);
+					const client = await this.taskQueue.createNewClient(jobarInstance);
+					const handle = await client.workflow.start(this.workflowFunction, handleOptions);
 					logger.debug(`⌛ WORKFLOW ${workflowId} requested`);
 					const result = await handle.result();
 					logger.info(`✅ WORKFLOW ${workflowId} ended`);

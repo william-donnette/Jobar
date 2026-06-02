@@ -25,7 +25,7 @@ default:
 # Installe les dépendances Node.js
 # Mets en place les caches
 node:install:
-    image: node:20.15-alpine
+    image: node:22-alpine
     stage: build
     only:
         - main
@@ -34,7 +34,7 @@ node:install:
 
 # Construit le projet Node.js
 node:build:
-    image: node:20.15-alpine
+    image: node:22-alpine
     stage: build
     needs: ['node:install']
     only:
@@ -43,7 +43,7 @@ node:build:
         - npm run build
 
 mocha:test:
-    image: node:20-bullseye-slim
+    image: node:22-bullseye-slim
     needs: ['node:build']
     stage: test
     only:
@@ -54,7 +54,7 @@ mocha:test:
 # Assure qu'un seul job register est exécuté à la fois
 # Applique la protection de l'environnement
 .register:
-    image: node:20.15-alpine
+    image: node:22-alpine
     variables:
         ENVIRONMENT: ''
     environment:
@@ -119,6 +119,7 @@ package:register:
         NPM_ID_TOKEN:
             aud: 'npm:registry.npmjs.org'
     script:
+        - npm install -g npm@latest
         - npm install
         - npm run build
         - npm publish --provenance --access public

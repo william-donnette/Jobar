@@ -118,8 +118,9 @@ package:register:
     id_tokens:
         NPM_ID_TOKEN:
             aud: 'npm:registry.npmjs.org'
-    script:
+    before_script:
         - npm install -g npm@latest
+    script:
         - npm install
         - npm run build
         - npm publish --provenance --access public

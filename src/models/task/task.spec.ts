@@ -99,4 +99,23 @@ describe('Task', () => {
 			assert.strictEqual(invalidTask.isValid, false);
 		});
 	});
+
+	describe('getWorkflowId', () => {
+		it('should throw an error if workflowId exceeds 255 characters', () => {
+			const longNameTask = new Task(mockWorkflow, {
+				setWorkflowId: () => 'a'.repeat(256),
+			});
+			const mockReq = {} as any;
+			const mockJobarInstance = { useUniqueWorkflowId: false } as any;
+
+			assert.throws(
+				() => {
+					longNameTask.getWorkflowId(mockReq, mockJobarInstance);
+				},
+				{
+					message: '❌ WorkflowId is too long (256 characters). It must be less than or equal to 255 characters.',
+				}
+			);
+		});
+	});
 });

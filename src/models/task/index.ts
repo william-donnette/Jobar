@@ -43,7 +43,10 @@ export type TaskOptions = ExposedTaskOptions | InternalTaskOptions;
 export class Task {
 	private taskQueue: TaskQueue | undefined;
 
-	constructor(private readonly workflowFunction: Workflow, private readonly options: TaskOptions = {}) {}
+	constructor(
+		private readonly workflowFunction: Workflow,
+		private readonly options: TaskOptions = {}
+	) {}
 
 	get name() {
 		return camelize(this.workflowFunction.name);
@@ -102,7 +105,13 @@ export class Task {
 		if (useUniqueWorkflowId) {
 			workflowId += '-' + uuid();
 		}
-		return formatId(workflowId);
+		const formattedId = formatId(workflowId);
+		if (formattedId.length > 255) {
+			throw new Error(
+				`❌ WorkflowId ${formattedId} is too long (${formattedId.length} characters). It must be less than or equal to 255 characters.`
+			);
+		}
+		return formattedId;
 	}
 
 	/* istanbul ignore next */
@@ -186,7 +195,7 @@ export class Task {
 							jobarInstance,
 							taskOptions: this.options,
 							workflowStartOptions,
-					  })
+						})
 					: await startWorkflow(workflowStartOptions);
 			} catch (workflowError: unknown) {
 				logger.error(`❌ WORKFLOW ${workflowId} failed`);
